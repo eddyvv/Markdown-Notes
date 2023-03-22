@@ -1,0 +1,179 @@
+# Ubuntu常见问题解决方法
+
+
+
+## Ubuntu只显示本地环回无法连接宿主机
+
+
+
+```bash
+# 先停止服务
+sudo service network-manager stop  
+# 删除文件
+sudo rm /var/lib/NetworkManager/NetworkManager.state
+# 修改文件
+sudo vim /etc/NetworkManager/NetworkManager.conf 把false改成true　
+#重启服务器
+sudo service network-manager start
+```
+
+
+
+## Ubuntu安装VM-Tools
+
+```bash
+sudo apt-get install open-vm-tools
+sudo apt-get install open-vm-tools-desktop
+```
+
+
+
+# 查看Ubuntu版本
+
+```bash
+lsb_release
+```
+
+
+
+
+
+## Ubuntu切CPU性能
+
+```bash
+sudo apt install cpufrequtils
+cpufreq-info
+sudo cpufreq-set -g performance
+cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq
+```
+
+## Ubuntu-Server安装界面
+
+```bash
+sudo apt install lightdm
+sudo service lightdm start
+```
+
+## SFTP传输文件
+
+常用命令
+
+```bash
+ SFTP命令汇总
+                  cd 路径                        更改到远程目录的路径
+                  lcd 路径                       更改到本地目录的路径
+                  chgrp group path               将文件path的组更改为group
+                  chmod mode path                将文件path的权限更改为mode
+                  chown owner path               将文件path的属主更改为owner
+                  exit                           退出 sftp
+                  help                           显示这个帮助文本
+                  get 远程路径                   下载文件
+                  ln existingpath linkpath       符号链接远程文件
+                  ls [选项] [路径]               显示远程目录列表
+                  lls [选项] [路径]              显示本地目录列表
+                  mkdir 路径                     创建远程目录
+                  lmkdir 路径                    创建本地目录
+                  mv oldpath newpath             移动远程文件
+                  open [用户@]主机[:端口]        连接到远程主机
+                  put 本地路径                   上传文件
+                  pwd                            显示远程工作目录
+                  lpwd                           打印本地工作目录
+                  quit                           退出 sftp
+                  rmdir 路径                     移除远程目录
+                  lrmdir 路径                    移除本地目录
+                  rm 路径                        删除远程文件
+                  lrm 路径                       删除本地文件
+                  symlink existingpath linkpath  符号链接远程文件
+                  version                        显示协议版本
+```
+
+
+
+### Windows SFTP连接Linux
+
+```bash
+C:\User\eddy> sftp root@192.168.159.131
+root@192.168.159.131's password:
+Connected to 192.168.159.131.
+sftp> 
+```
+
+### 下载Linux端文件夹test至本地F盘test目录下
+
+```bash
+sftp> get -r /home/test F:/test
+```
+
+
+
+### 上载本都端文件至Linux home目录下
+
+```bash
+sftp> put -r F:/msdia80.dll /home/
+```
+
+## 更改IP地址
+
+```bash
+$ sudo vi /etc/netplan/00-installer-config.yaml
+```
+
+键入
+
+```bash
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    eno1:
+     dhcp4: no
+     addresses: [192.168.1.2/24]#ip地址
+     gateway4: 192.168.1.1#网关
+     nameservers:
+       addresses: [114.114.114.114]
+```
+
+启动服务
+
+```bash
+sudo netplan apply
+```
+
+## Ubuntu安装中文`man`手册
+
+```bash
+1.sudo apt-get update # 更新你的下载源目录，此步骤可省略。
+2.sudo apt-get install manpages-zh # 系统会自动下载并安装
+3.vi ~/.bashrc # 编辑家目录下的bash配置文件
+4.在最后一行输入：alias cman='man -M /usr/share/man/zh_CN' # 将中文的man命令重命名为cman命令，之后保存并退出编辑
+5.source ~/.bashrc # 重新运行.bashrc文件
+```
+
+# Ubuntu20.04安装Perf工具
+
+```bash
+sudo apt install linux-tools-common
+sudo apt install linux-tools-5.13.0-40-generic
+sudo apt install linux-cloud-tools-5.13.0-40-generic
+```
+
+
+
+# TAR
+
+## 解压
+
+```bash
+tar -zxvf test.tar.gz
+```
+
+## 压缩
+
+```bash
+tar -zcvf test.tar.gz test
+```
+
+
+
+
+
