@@ -255,6 +255,7 @@ petalinux-build -c device-tree
 ## 设备树反编译
 
 ```bash
+$ cd <plnx-proj-root>/images/linux/
 ../../build/tmp/sysroots-components/x86_64/dtc-native/usr/bin/dtc -I dtb -O dts -o system.dts system.dtb
 ```
 
