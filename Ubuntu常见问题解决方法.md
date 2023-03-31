@@ -159,19 +159,5 @@ sudo apt install linux-cloud-tools-5.13.0-40-generic
 
 
 
-# TAR
-
-## 解压
-
-```bash
-tar -zxvf test.tar.gz
-```
-
-## 压缩
-
-```bash
-tar -zcvf test.tar.gz test
-```
-
 
 
