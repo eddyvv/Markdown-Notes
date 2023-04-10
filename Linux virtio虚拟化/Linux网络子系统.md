@@ -6,7 +6,7 @@
 
 Linux内核将网络设备驱动程序划分为4个层次，分别为网络协议接口层、网路设备接口层、提供实际功能的设备驱动功能层、网络设备与媒介层。
 
-![img](image/Linux%E7%BD%91%E7%BB%9C%E5%AD%90%E7%B3%BB%E7%BB%9F/1387014-20200724181151606-240225082.png)
+![image-20230407160749619](image/Linux%E7%BD%91%E7%BB%9C%E5%AD%90%E7%B3%BB%E7%BB%9F/image-20230407160749619.png)
 
 ## 网络协议接口层
 
@@ -48,11 +48,29 @@ Linux内核只涉及OSI模型中的3层，其中L2、L3、L4、分别对应OSI�
 
 
 
+
+
+
+
+```c
+dev_queue_xmit()
+	->__dev_queue_xmit()
+		->dev_hard_start_xmit()
+			->xmit_one()
+				->netdev_start_xmit()
+					->__netdev_start_xmit()
+    					->ops->ndo_start_xmit(skb, dev);
+```
+
+
+
+
+
 # 参考
 
 [Linux 网络子系统 - 陈富林 - 博客园 (cnblogs.com)](https://www.cnblogs.com/chenfulin5/p/6073755.html)
 
-
+[[转载\]Linux TCP/IP 协议栈源码分析 - Better-zyy - 博客园 (cnblogs.com)](https://www.cnblogs.com/better-zyy/archive/2012/03/16/2400811.html)
 
 
 

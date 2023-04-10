@@ -233,6 +233,13 @@ ERROR: There's no '/dev' on rootfs
 petalinux-config -> Image packaging configuration -> INITRAMFS/INITRD Image name -> petalinux-image-minimal
 ```
 
+## 指定源码路径
+
+```bash
+set substitute-path <当前搜索路径> <指的搜索路径>
+set substitute-path /usr/src/kernel /opt/linux-xlnx-xilinx-v2021.1
+```
+
 
 
 # 如何修改设备树[^3]

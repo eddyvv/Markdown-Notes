@@ -84,11 +84,20 @@ git push -u origin main
 git remote -v
 ```
 
-配置SSH
+* 配置SSH
 
 ```bash
 ssh-keygen -t rsa -C "xxx@xxx.com"
 //执行后一直回车即可
 在/home/.ssh/文件夹找到id_rsa.pub，将其配置到对应的git远程仓库的SSH配置中即可
+```
+
+* 修改commit信息
+
+```bash
+/*填写更改的信息*/
+git commit --amend or git commit --amend -m "修改的提交信息"
+/*强制推送到远程（覆盖上次提交信息）*/
+git push --force
 ```
 

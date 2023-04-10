@@ -176,6 +176,13 @@ set var 变量名=值
 set print pretty on
 ```
 
+### 更改GDB调试源码路径
+
+```bash
+set substitute-path <当前搜索路径> <指的搜索路径>
+set substitute-path /usr/src/kernel /opt/linux-xlnx-xilinx-v2021.1
+```
+
 
 
 
