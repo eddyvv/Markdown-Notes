@@ -101,3 +101,24 @@ git commit --amend or git commit --amend -m "修改的提交信息"
 git push --force
 ```
 
+* 切到某个commit
+
+```bash
+/* 切到某个commit */
+git checkout <commit号>
+/* 切换到最新commit */
+git checkout -
+```
+
+* 创建tag
+
+```bash
+git tag -a <标签名称> -m "标签的注释信息"
+```
+
+* 查看当前commit哈希值
+
+```bash
+git rev-parse HEAD
+```
+
