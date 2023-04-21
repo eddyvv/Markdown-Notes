@@ -64,6 +64,43 @@ err_ctrl:
 
 
 
+## 相关函数
+
+### napi_schedule
+
+`napi_schedule` 是 Linux 内核网络子系统中的一个函数，用于调度一个 NAPI 处理周期以在下一个可用的处理器时间中运行。NAPI 是 Linux 内核网络子系统提供的一种高效的网络数据包处理机制，它可以有效地减少网络数据包处理过程中的 CPU 开销，提高系统的网络性能。
+
+`include/linux/netdevice.h`
+
+```c
+static inline void napi_schedule(struct napi_struct *n)
+```
+
+在网络设备驱动程序中，通常会在中断处理函数中调用 `napi_schedule` 函数，以调度一个 NAPI 处理周期以处理网络数据包。
+
+### netif_napi_add
+
+`netif_napi_add`用于为一个网络设备注册一个 NAPI 处理程序。
+
+`net/core/dev.c`
+
+```c
+void netif_napi_add(struct net_device *dev, struct napi_struct *napi,
+		    int (*poll)(struct napi_struct *, int), int weight)
+```
+
+### napi_complete
+
+`napi_complete`用于通知内核网络协议栈当前的 NAPI 处理状态。NAPI 处理程序通常在网络设备驱动程序中实现，它使用 `napi_schedule` 函数调度一个 NAPI 处理周期以处理网络数据包。在 NAPI 处理周期中，NAPI 处理程序会从网络设备接收网络数据包，并对其进行处理，直到达到预设的处理预算或者没有更多的网络数据包可处理。当 NAPI 处理程序完成处理网络数据包后，需要使用 `napi_complete` 函数通知内核网络协议栈当前的 NAPI 处理状态，以便内核网络协议栈可以继续处理网络数据包。
+
+
+
+## NAPI接收数据一般流程
+
+1. 在`xxx_probe`函数中使用`netif_napi_add`注册NAPI处理函数;
+2. 接收中断来临，调用接收中断函数，中断函数中调用`napi_schedule`在下一个可用的处理器时间中运行NAPI处理接收数据；
+3. NAPI处理函数被执行，接收并传递给上层协议栈进行处理。
+
 
 
 # 参考

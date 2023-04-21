@@ -278,6 +278,8 @@ PG203 CMAC 手册
 
 PG210 25G AXI Ethernet 手册
 
+PG021 AXI-DMA手册
+
 PG288 MCDMA手册
 
 UG1085-Zynq-Ultrascale-trm 手册 250 SoC芯片手册

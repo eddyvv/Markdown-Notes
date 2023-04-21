@@ -34,6 +34,36 @@ Type 1 设备是指 PCIe-to-PCI/PCI-X Bridge，它们可以将一个 PCIe 总线
 
 <center>PCIe Type 1 配置空间（网桥设备）</center>
 
+### 寄存器
+
+## PCI中断
+
+### INTx中断
+
+![image.png](image/PCIe%E5%9F%BA%E7%A1%80/1000019445-6366943279216546732835967.png)
+
+
+
+![image-20230414135118596](image/PCIe%E5%9F%BA%E7%A1%80/image-20230414135118596.png)
+
+
+
+### MSI中断
+
+
+
+
+
+### MSI-X中断
+
+
+
+
+
+
+
+
+
 ## 兼容PCI协议
 
 PCIe总线 是 PCI总线 的升级版，因此 PCIe 设备的配置空间需要兼容 PCI 协议，以确保与老式 PCI 设备的兼容性和互操作性。
@@ -148,3 +178,7 @@ consistent_dma_mask_bits  enable           local_cpus     power_state  resource0
 [PCIe扫盲系列博文连载目录篇（第一阶段）-Felix-电子技术应用-AET-中国科技核心期刊-最丰富的电子设计资源平台 (chinaaet.com)](http://blog.chinaaet.com/justlxy/p/5100053251)
 
 [lspci命令详解_一口Linux的博客-CSDN博客](https://blog.csdn.net/daocaokafei/article/details/114482560)
+
+《PCI Exporess体系结构导读（王齐）》
+
+[PCIe学习笔记之MSI/MSI-x中断及代码分析_pci_alloc_irq_vectors_Hober_yao的博客-CSDN博客](https://blog.csdn.net/yhb1047818384/article/details/106676560)

@@ -113,7 +113,10 @@ git checkout -
 * 创建tag
 
 ```bash
+/* 创建tag */
 git tag -a <标签名称> -m "标签的注释信息"
+/* 推送标签至远程 */
+git push --tags
 ```
 
 * 查看当前commit哈希值
