@@ -125,3 +125,23 @@ git push --tags
 git rev-parse HEAD
 ```
 
+* 保存工作现场
+
+```bash
+git stash
+```
+
+git stash命令可以将当前未提交的工作隐藏起来。让你的工作区变的干净清爽。
+
+* 恢复工作现场
+
+```bash
+git stash apply
+```
+
+* 恢复并删除工作现场
+
+```bash
+git stash pop
+```
+
