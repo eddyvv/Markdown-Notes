@@ -449,7 +449,58 @@ iperf Done.
 
 ### UDP
 
+server
 
+```bash
+iperf3 -s -i 1 -p 1314
+-----------------------------------------------------------
+Server listening on 1314
+-----------------------------------------------------------
+Accepted connection from 192.168.159.131, port 58310
+[  5] local 192.168.159.131 port 1314 connected to 192.168.159.131 port 57107
+[ ID] Interval           Transfer     Bitrate         Jitter    Lost/Total Datagrams
+[  5]   0.00-1.00   sec   113 MBytes   950 Mbits/sec  0.055 ms  35/3660 (0.96%)  
+[  5]   1.00-2.00   sec   119 MBytes   999 Mbits/sec  0.048 ms  2/3813 (0.052%)  
+[  5]   2.00-3.00   sec   119 MBytes   998 Mbits/sec  0.072 ms  6/3815 (0.16%)  
+[  5]   3.00-4.00   sec   117 MBytes   983 Mbits/sec  0.081 ms  66/3815 (1.7%)  
+[  5]   4.00-5.00   sec   111 MBytes   932 Mbits/sec  1.192 ms  174/3731 (4.7%)  
+[  5]   5.00-6.00   sec   109 MBytes   916 Mbits/sec  0.126 ms  403/3896 (10%)  
+[  5]   6.00-7.00   sec   108 MBytes   903 Mbits/sec  0.460 ms  352/3796 (9.3%)  
+[  5]   7.00-8.00   sec   116 MBytes   972 Mbits/sec  0.265 ms  118/3834 (3.1%)  
+[  5]   8.00-9.00   sec   115 MBytes   968 Mbits/sec  0.140 ms  127/3814 (3.3%)  
+[  5]   9.00-10.00  sec   119 MBytes   998 Mbits/sec  0.038 ms  9/3814 (0.24%)  
+[  5]  10.00-10.04  sec  4.94 MBytes  1.02 Gbits/sec  0.027 ms  0/158 (0%)  
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bitrate         Jitter    Lost/Total Datagrams
+[  5]   0.00-10.04  sec  1.12 GBytes   962 Mbits/sec  0.027 ms  1292/38146 (3.4%)  receiver
+```
+
+
+
+client
+
+```bash
+iperf3 -u -c 192.168.159.131 -b 1000m -t 10 -p 1314
+Connecting to host 192.168.159.131, port 1314
+[  5] local 192.168.159.131 port 57107 connected to 192.168.159.131 port 1314
+[ ID] Interval           Transfer     Bitrate         Total Datagrams
+[  5]   0.00-1.00   sec   119 MBytes   999 Mbits/sec  3814  
+[  5]   1.00-2.00   sec   119 MBytes  1.00 Gbits/sec  3814  
+[  5]   2.00-3.00   sec   119 MBytes  1000 Mbits/sec  3816  
+[  5]   3.00-4.00   sec   119 MBytes  1000 Mbits/sec  3814  
+[  5]   4.00-5.00   sec   119 MBytes   999 Mbits/sec  3809  
+[  5]   5.00-6.00   sec   119 MBytes  1.00 Gbits/sec  3820  
+[  5]   6.00-7.00   sec   119 MBytes   999 Mbits/sec  3813  
+[  5]   7.00-8.00   sec   119 MBytes  1.00 Gbits/sec  3816  
+[  5]   8.00-9.00   sec   119 MBytes   999 Mbits/sec  3815  
+[  5]   9.00-10.00  sec   119 MBytes  1.00 Gbits/sec  3815  
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bitrate         Jitter    Lost/Total Datagrams
+[  5]   0.00-10.00  sec  1.16 GBytes  1000 Mbits/sec  0.000 ms  0/38146 (0%)  sender
+[  5]   0.00-10.04  sec  1.12 GBytes   962 Mbits/sec  0.027 ms  1292/38146 (3.4%)  receiver
+
+iperf Done.
+```
 
 
 

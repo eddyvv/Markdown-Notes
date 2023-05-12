@@ -7,12 +7,14 @@
     * [显示变更信息](#status)
 
 ## <a name="title"/>git相关操作
-* <a name="global">配置GitHub账户
-```git
+### <a name="global">配置GitHub账户
+
+```bash
 git config --global user.name "用户名"
 git config --global user.email "邮箱地址"
 ```
-* <a name="git"/>git本地库推送到远程
+### <a name="git"/>git本地库推送到远程
+
 ```git
     git init -- 新建一个本地仓库
     在远程创建一个仓库
@@ -22,48 +24,51 @@ git config --global user.email "邮箱地址"
     git commit -m "提交信息"
     git push
 ```
-* 删除git本地缓存<a name="delete"/>
+### 删除git本地缓存<a name="delete"/>
+
 ```git
     git rm -r --cached .
 ```
-* 提交暂存区到仓库<a name="commit"/>
+### 提交暂存区到仓库<a name="commit"/>
+
 ```git
     git commit -m [说明]
 ```
-* 显示变更信息<a name="status"/>
+### 显示变更信息<a name="status"/>
+
 ```
     git status
 ```
-* git push提交成功后撤销回退
+### git push提交成功后撤销回退
+
 ```
     git reflog //查看版本更新情况
     git reset --hard [版本号]
     git push --force //推送至远程
 ```
 
-* 撤销操作
+### 撤销操作
 
 在提交完之后发现漏掉文件或者信息填写错误，可使用<font color = red> --amend </font>
 ```c
     git commit --amend
 ```
 
-* 撤销上一次`commit`
+### 撤销上一次`commit`
 
 ```bash
 git reset --soft HEAD^
 ```
 
+### 回滚至指定版本
 
-
-* 回滚至指定版本
-
-```c
-    git reset --hard id
+```bash
+git reset --hard id
 ```
 
-* 本地推送至远程仓库新仓库
-```c
+### 本地推送至远程仓库新仓库
+
+```bash
 git init
 git add README.md
 git commit -m "first commit"
@@ -72,19 +77,21 @@ git remote add origin <远程仓库地址>
 git push -u origin main
 ```
 
-* 本地推送至远程已有仓库
-```c
+### 本地推送至远程已有仓库
+
+```bash
 git remote add origin git@github.com:eddyfile/learn-ldd-master.git
 git branch -M main
 git push -u origin main
 ```
 
-* git查看本地仓库的远程推送地址
-```c
+### git查看本地仓库的远程推送地址
+
+```bash
 git remote -v
 ```
 
-* 配置SSH
+### 配置SSH
 
 ```bash
 ssh-keygen -t rsa -C "xxx@xxx.com"
@@ -92,7 +99,7 @@ ssh-keygen -t rsa -C "xxx@xxx.com"
 在/home/.ssh/文件夹找到id_rsa.pub，将其配置到对应的git远程仓库的SSH配置中即可
 ```
 
-* 修改commit信息
+### 修改commit信息
 
 ```bash
 /*填写更改的信息*/
@@ -101,7 +108,7 @@ git commit --amend or git commit --amend -m "修改的提交信息"
 git push --force
 ```
 
-* 切到某个commit
+### 切到某个commit
 
 ```bash
 /* 切到某个commit */
@@ -110,7 +117,7 @@ git checkout <commit号>
 git checkout -
 ```
 
-* 创建tag
+### 创建tag
 
 ```bash
 /* 创建tag */
@@ -119,13 +126,13 @@ git tag -a <标签名称> -m "标签的注释信息"
 git push --tags
 ```
 
-* 查看当前commit哈希值
+### 查看当前commit哈希值
 
 ```bash
 git rev-parse HEAD
 ```
 
-* 保存工作现场
+### 保存工作现场
 
 ```bash
 git stash
@@ -133,15 +140,21 @@ git stash
 
 git stash命令可以将当前未提交的工作隐藏起来。让你的工作区变的干净清爽。
 
-* 恢复工作现场
+### 恢复工作现场
 
 ```bash
 git stash apply
 ```
 
-* 恢复并删除工作现场
+### 恢复并删除工作现场
 
 ```bash
 git stash pop
+```
+
+### 撤销上次push
+
+```bash
+git push --force origin HEAD^:master
 ```
 

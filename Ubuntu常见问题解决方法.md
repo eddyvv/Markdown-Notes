@@ -26,7 +26,9 @@ sudo apt-get install open-vm-tools
 sudo apt-get install open-vm-tools-desktop
 ```
 
+## Ubuntu一键切换到简体中文
 
+[TheWhiteDog9487/ubuntu-language-onekey-zh_cn: 一键切换Ubuntu系统的终端语言到简体中文 (github.com)](https://github.com/TheWhiteDog9487/ubuntu-language-onekey-zh_cn)
 
 # 查看Ubuntu版本
 
@@ -157,7 +159,16 @@ sudo apt install linux-tools-5.13.0-40-generic
 sudo apt install linux-cloud-tools-5.13.0-40-generic
 ```
 
+# Unknown symbol ib_register_device
 
+安装 `ib_core.ko`
+
+```bash
+sudo apt-get install build-essential libelf-dev cmake
+sudo apt-get install libibverbs1 libibverbs-dev librdmacm1 librdmacm-dev rdmacm-utils ibverbs-utils
+sudo modprobe ib_core
+sudo modprobe rdma_ucm
+```
 
 
 
