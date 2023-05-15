@@ -502,3 +502,5 @@ bin   dev  init  proc  root  sbin  sys   usr
 
 [自行编译内核，启动内核卡在“loading initial ramdisk”_启动卡在initrd_奇妙之二进制的博客-CSDN博客](https://blog.csdn.net/HandsomeHong/article/details/125157372)
 
+[linux——编译内核（ubuntu18.04+linux-5.6.4）](https://blog.csdn.net/bdwdwks/article/details/106294349)
+
