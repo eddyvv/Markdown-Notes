@@ -100,7 +100,7 @@ BTF: .tmp_vmlinux.btf: pahole (pahole) is not available
 sudo apt install dwarves
 ```
 
-# 编译内核
+# 编译安装内核
 
 ## 下载内核
 
@@ -140,7 +140,7 @@ CONFIG_DEBUG_INFO_BTF=n
 #基于文本选单的配置界面，字符终端下推荐使用
 make menuconfig
 
-make j$(nproc)
+make -j$(nproc)
 
 make all
 
@@ -161,6 +161,7 @@ sudo make INSTALL_MOD_STRIP=1 modules_install
 2. 安装内核
 
 ```bash
+make bzImage
 sudo make install
 ```
 
@@ -172,7 +173,7 @@ sudo update-initramfs -c -k 5.15.0
 
 ![image-20230515101421566](image/Linux%E5%86%85%E6%A0%B8/image-20230515101421566.png)
 
-4. 更新`grub`
+4. 更改`grub`
 
 修改文件
 
@@ -210,6 +211,10 @@ reboot
 ![image-20230515101713706](image/Linux%E5%86%85%E6%A0%B8/image-20230515101713706.png)
 
 <center>安装新内核之前的内核版本</center>
+
+
+
+<center>安装新内核之后</center>
 
 [若重启未看到选择内核的页面参考](#GRUB)
 
@@ -263,7 +268,7 @@ sudo update-grub
 
 ## 常见问题
 
-### Module.symvers is missing
+### 1. Module.symvers is missing
 
 ```bash
 WARNING: Symbol version dump "Module.symvers" is missing.
@@ -277,7 +282,7 @@ WARNING: Symbol version dump "Module.symvers" is missing.
 make modules_prepare
 ```
 
-### No rule to make target ‘debian/canonical-certs.pem‘, needed by ‘certs/x509_certificate_list‘
+### 2. No rule to make target ‘debian/canonical-certs.pem‘, needed by ‘certs/x509_certificate_list‘
 
 可以修改config：
 
@@ -285,13 +290,13 @@ vim .config
 
 修改`CONFIG_SYSTEM_TRUSTED_KEYS`，将其置空： CONFIG_SYSTEM_TRUSTED_KEYS=""*也可能需要设置*CONFIG_SYSTEM_REVOCATION_KEYS为空。
 
-### FAILED:load BTF from vmlinux:No such file or directory
+### 3. FAILED:load BTF from vmlinux:No such file or directory
 
 vim .config
 
 修改`CONFIG_DEBUG_INFO_BTF`，将其置n
 
-### <a name="GRUB"/>安装完内核之后无法显示`GRUB`用以选择内核启动
+### 4. 安装完内核之后无法显示`GRUB`用以选择内核启动<a name="GRUB"/>
 
 进入命令行之后执行
 
@@ -323,7 +328,7 @@ sudo update-grub
 
 ![image-20230515103559801](image/Linux%E5%86%85%E6%A0%B8/image-20230515103559801.png)
 
-### <a name="ramdisk"/>内核启动卡在`loading initial ramdisk`
+### 5. 内核启动卡在`loading initial ramdisk`<a name="ramdisk"/>
 
 编译内核过程中，当安装内核模块时未使用
 
@@ -496,3 +501,4 @@ bin   dev  init  proc  root  sbin  sys   usr
 [关于Ubuntu内核(更新和卸载内核、取消自动更新) · Issue #1 · chiwent/blog (github.com)](https://github.com/chiwent/blog/issues/1)
 
 [自行编译内核，启动内核卡在“loading initial ramdisk”_启动卡在initrd_奇妙之二进制的博客-CSDN博客](https://blog.csdn.net/HandsomeHong/article/details/125157372)
+
