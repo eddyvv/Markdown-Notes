@@ -134,6 +134,14 @@ CONFIG_SYSTEM_REVOCATION_KEYS=""
 CONFIG_DEBUG_INFO_BTF=n
 ```
 
+3. 注释掉CONFIG_X86_X32
+
+```bash
+#CONFIG_X86_X32=y
+```
+
+
+
 ## 编译内核
 
 ```bash
@@ -353,7 +361,7 @@ sudo make INSTALL_MOD_STRIP=1 modules_install
 找到对应的模块文件夹，找到需要编译的文件，确认编译的config文件
 
 ```bash
-make CONFIG_INFINIBAND=m -C /home/eddy/00_25G/linux-5.15 M=/home/eddy/00_25G/linux-5.15/drivers/infiniband/core modules
+make CONFIG_INFINIBAND=m -C <源码> M=<模块文件夹> modules
 ```
 
 # qemu+gdb调试linux内核
