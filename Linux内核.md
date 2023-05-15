@@ -148,6 +148,10 @@ make all
 make -j$(nproc) modules
 ```
 
+```
+make bzImage
+```
+
 ## 安装
 
 1. 首先安装模块
@@ -496,3 +500,4 @@ bin   dev  init  proc  root  sbin  sys   usr
 [关于Ubuntu内核(更新和卸载内核、取消自动更新) · Issue #1 · chiwent/blog (github.com)](https://github.com/chiwent/blog/issues/1)
 
 [自行编译内核，启动内核卡在“loading initial ramdisk”_启动卡在initrd_奇妙之二进制的博客-CSDN博客](https://blog.csdn.net/HandsomeHong/article/details/125157372)
+[linux——编译内核（ubuntu18.04+linux-5.6.4）](https://blog.csdn.net/bdwdwks/article/details/106294349)
