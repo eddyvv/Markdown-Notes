@@ -57,8 +57,6 @@
 
 文字信息，不可选
 
-
-
 `make menuconfig` 配置完成之后，配置结果（变量的值）会保存在内核源码顶层目录的`.config`文件中，Makefile编译内核时回去读取`.config`文件中的变量，来控制编译行为。
 
 ![image-20230308164749688](image/Linux%E5%86%85%E6%A0%B8/image-20230308164749688.png)
@@ -79,8 +77,6 @@ obj-n 不编译
 3. 修改上层`Kconfig`文件，包含新加入源码的`Kconfig`文件。
 4. 修改`Makefile`文件
 5. 修改上一级目录的Makefile
-
-
 
 ```bash
 make[1]: *** No rule to make target 'debian/canonical-certs.pem', needed by 'certs/x509_certificate_list'.  Stop.
@@ -104,7 +100,256 @@ BTF: .tmp_vmlinux.btf: pahole (pahole) is not available
 sudo apt install dwarves
 ```
 
+# 编译内核
 
+## 下载内核
+
+Linux内核下载[The Linux Kernel Archives](https://www.kernel.org/)
+
+## 安装依赖
+
+```bash
+sudo apt-get install gcc g++ libncurses5-dev build-essential kernel-package libssl-dev libc6-dev bin86 flex bison qttools5-dev libelf-dev
+```
+
+## 更改.config
+
+```bash
+#拷贝现有ubuntu的.config至编译内核的目录
+cp -v /boot/config-$(uname -r) .config
+```
+
+1. 更改`CONFIG_SYSTEM_TRUSTED_KEYS `和`CONFIG_SYSTEM_REVOCATION_KEYS`
+
+```bash
+CONFIG_MODULE_SIG_KEY=""
+CONFIG_SYSTEM_TRUSTED_KEYS=''
+CONFIG_SYSTEM_EXTRA_CERTIFICATE_SIZE=2048
+CONFIG_SYSTEM_REVOCATION_KEYS=""
+```
+
+2. 更改`CONFIG_DEBUG_INFO_BTF`
+
+```bash
+CONFIG_DEBUG_INFO_BTF=n
+```
+
+## 编译内核
+
+```bash
+#基于文本选单的配置界面，字符终端下推荐使用
+make menuconfig
+
+make j$(nproc)
+
+make all
+
+# 编译模块
+make -j$(nproc) modules
+```
+
+## 安装
+
+1. 首先安装模块
+
+这里加上`INSTALL_MOD_STRIP=1`是为了避免内核启动时卡在 [loading initial ramdisk](#ramdisk)
+
+```bash
+sudo make INSTALL_MOD_STRIP=1 modules_install
+```
+
+2. 安装内核
+
+```bash
+sudo make install
+```
+
+3. 更改引导
+
+```bash
+sudo update-initramfs -c -k 5.15.0
+```
+
+![image-20230515101421566](image/Linux%E5%86%85%E6%A0%B8/image-20230515101421566.png)
+
+4. 更新`grub`
+
+修改文件
+
+```bash
+sudo vi /etc/default/grub
+```
+
+```bash
+#GRUB_TIMEOUT_STYLE=hidden
+GRUB_TIMEOUT=10
+```
+
+更新
+
+```bash
+sudo update-grub
+```
+
+![image-20230515102533338](image/Linux%E5%86%85%E6%A0%B8/image-20230515102533338.png)
+
+5. 重启
+
+```bash
+reboot
+```
+
+在`GRUB`页面选择`Advanced options for Ubuntu`
+
+![image-20230515104210488](image/Linux%E5%86%85%E6%A0%B8/image-20230515104210488.png)
+
+选择需要启动的内核版本
+
+![image-20230515104230612](image/Linux%E5%86%85%E6%A0%B8/image-20230515104230612.png)
+
+![image-20230515101713706](image/Linux%E5%86%85%E6%A0%B8/image-20230515101713706.png)
+
+<center>安装新内核之前的内核版本</center>
+
+[若重启未看到选择内核的页面参考](#GRUB)
+
+## 其他操作
+
+### 清理内核源目录
+
+```bash
+# make mrproper会删除配置的.config以及其他备份
+sudo make mrproper 
+# make clean会删除编译过程中生成的中间文件和内核镜像文件
+sudo make clean
+```
+
+### 卸载安装的内核
+
+获取所有安装的内核版本
+
+```bash
+dpkg --get-selections | grep linux
+```
+
+选择要卸载的版本，卸载下列安装包
+
+```bash
+sudo apt remove linux-image-<版本>-generic
+sudo apt remove linux-headers-<版本>
+sudo apt remove linux-headers-<版本>-generic
+sudo apt remove linux-modules-<版本>-generic
+```
+
+
+
+卸载源码版本
+
+```bash
+sudo rm /boot/vmlinuz-5.15.0
+sudo rm /boot/initrd.img-5.15.0 
+sudo rm /boot/System.map-5.15.0 
+sudo rm /boot/config-5.15.0 
+sudo rm -rf /lib/modules/5.15.0 
+```
+
+更新启动引导
+
+```bash
+sudo update-grub
+```
+
+
+
+## 常见问题
+
+### Module.symvers is missing
+
+```bash
+WARNING: Symbol version dump "Module.symvers" is missing.
+         Modules may not have dependencies or modversions.
+         You may get many unresolved symbol warnings.
+```
+
+执行
+
+```bash
+make modules_prepare
+```
+
+### No rule to make target ‘debian/canonical-certs.pem‘, needed by ‘certs/x509_certificate_list‘
+
+可以修改config：
+
+vim .config
+
+修改`CONFIG_SYSTEM_TRUSTED_KEYS`，将其置空： CONFIG_SYSTEM_TRUSTED_KEYS=""*也可能需要设置*CONFIG_SYSTEM_REVOCATION_KEYS为空。
+
+### FAILED:load BTF from vmlinux:No such file or directory
+
+vim .config
+
+修改`CONFIG_DEBUG_INFO_BTF`，将其置n
+
+### <a name="GRUB"/>安装完内核之后无法显示`GRUB`用以选择内核启动
+
+进入命令行之后执行
+
+```bash
+sudo vi /etc/default/grub
+```
+
+注释掉
+
+```bash
+# GRUB_TIMEOUT_STYLE=hidden
+```
+
+修改
+
+```bash
+GRUB_TIMEOUT=10
+ 
+GRUB_COMLINE_LINUX_DEFAULT="text"
+```
+
+![image-20230515103459264](image/Linux%E5%86%85%E6%A0%B8/image-20230515103459264.png)
+
+执行
+
+```bash
+sudo update-grub
+```
+
+![image-20230515103559801](image/Linux%E5%86%85%E6%A0%B8/image-20230515103559801.png)
+
+### <a name="ramdisk"/>内核启动卡在`loading initial ramdisk`
+
+编译内核过程中，当安装内核模块时未使用
+
+```bash
+INSTALL_MOD_STRIP=1
+```
+
+标注，会导致`initrd`文件过大，Ubuntu 20.04所用的Grub 2.04无法支持过大的initrd文件（如500M），导致内核启动时卡在“loading initial ramdisk”（Can’t allocate initrd）。
+
+可行的办法：
+
+安装模块时加上
+
+```bash
+sudo make INSTALL_MOD_STRIP=1 modules_install
+```
+
+
+
+## 单独编译Linux内核的某一个模块
+
+找到对应的模块文件夹，找到需要编译的文件，确认编译的config文件
+
+```bash
+make CONFIG_INFINIBAND=m -C /home/eddy/00_25G/linux-5.15 M=/home/eddy/00_25G/linux-5.15/drivers/infiniband/core modules
+```
 
 # qemu+gdb调试linux内核
 
@@ -236,3 +481,18 @@ bin   dev  init  proc  root  sbin  sys   usr
 
 [使用QEMU和GDB调试Linux内核 | Consen](https://consen.github.io/2018/01/17/debug-linux-kernel-with-qemu-and-gdb/)
 
+[Linux下使用内核源码单独编译某一模块 - tycoon3 - 博客园 (cnblogs.com)](https://www.cnblogs.com/dream397/p/13984263.html)
+
+[内核错误: No rule to make target ‘debian/canonical-certs.pem‘, needed by ‘certs/x509_certificate_list‘_no rule to make target 'debian/canonical-certs.pem_蓝天居士的博客-CSDN博客](https://blog.csdn.net/phmatthaus/article/details/124353775)
+
+[Linux 内核 下载 编译 安装 2021 ubuntu_yaoxinJJJ的博客-CSDN博客](https://blog.csdn.net/yaoxinJJJ/article/details/115433638)
+
+[内核Module.symvers文件揭秘 - Linux内核编程 | 宅学部落 (zhaixue.cc)](https://www.zhaixue.cc/kernel/kernel-module_sysmvers.html)
+
+[如何编译安装Linux内核 - LightningStar - 博客园 (cnblogs.com)](https://www.cnblogs.com/harrypotterjackson/p/11846222.html)
+
+[ubuntu上更新和卸载Linux内核 - 广漠飘羽 - 博客园 (cnblogs.com)](https://www.cnblogs.com/gmpy/p/12533548.html)
+
+[关于Ubuntu内核(更新和卸载内核、取消自动更新) · Issue #1 · chiwent/blog (github.com)](https://github.com/chiwent/blog/issues/1)
+
+[自行编译内核，启动内核卡在“loading initial ramdisk”_启动卡在initrd_奇妙之二进制的博客-CSDN博客](https://blog.csdn.net/HandsomeHong/article/details/125157372)
