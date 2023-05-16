@@ -56,6 +56,8 @@ petalinux-package --prebuilt --fpga ./images/linux/design_1_wrapper.bit --force
 petalinux-boot --qemu --prebuilt 3
 ```
 
+注意：若使用`petalinux2021`启动qemu需要在xilinx官网下载某个版本的`.bsp`，将其中的`pmu_rom_qemu_sha3.elf` 拷贝到`<plnx-proj-root>/pre-built/linux/images`下。
+
 ## 打包BSP
 
 ```bash
@@ -95,12 +97,6 @@ petalinux-package --bsp -p 2021-25-mcdma/ --hwsource eth_25g_2021-3-8/ -o 2021-2
 petalinux-util --gdb vmlinux
 ```
 
-
-
-
-
-
-
 # 创建`zynqMP`自定义工程[^1]
 
 ## 创建`.xsa`文件
@@ -134,6 +130,8 @@ petalinux-config -c u-boot
 
 对构建的工程进行实际的配置
 
+
+
 ## 工程编译
 
 ```bash
@@ -164,6 +162,73 @@ petalinux-build -x mrproper
 petalinux-build -c mymodule -x do_cleansstate
 #清除用户模块
 ```
+
+### 离线编译工程配置
+
+下载离线包[Downloads (xilinx.com)](https://www.xilinx.com/support/download/index.html/content/xilinx/en/downloadNav/embedded-design-tools/archive.html)
+
+![image-20230516163136806](image/petalinux/image-20230516163136806.png)
+
+下载上述两个压缩包。
+
+当前环境为 petalinux2021.1 设备为`250soc` （xilinx ）
+
+```bash
+$ cd <plnx-proj-root>
+petalinux-config --get-hw-description <name>.xsa
+```
+
+进入`Linux Components Selection`  ---> `u-boot（u-boot-xlinx）`以及`linux-kernel`均选择`ext-local-src`，配置离线编译包。
+
+![image-20230516155842635](image/petalinux/image-20230516155842635.png)
+
+![image-20230516160123087](image/petalinux/image-20230516160123087.png)
+
+![image-20230516160222677](image/petalinux/image-20230516160222677.png)
+
+进入`Subsystem AUTO Hardware Settings  --->` `Serial Settings  --->` 将串口均选择为`psu_uart_1`
+
+![image-20230516160245000](image/petalinux/image-20230516160245000.png)
+
+原因是根据`.xsa`生成的设备树中将`uart1`配到了设备的`serial0`。
+
+![image-20230516160555650](image/petalinux/image-20230516160555650.png)
+
+若要使用`qemu`启动，此步骤可空过，若使用板子启动需要将这里的`INITRAMFS/INITRD Image name`更改为如下`petalinux-image-minimal`，若更改后使用qemu启动会出现[ERROR /dev](#dev)的错误。
+
+![image-20230516160724405](image/petalinux/image-20230516160724405.png)
+
+配置离线包
+
+进入`Yocto Settings  --->` `Add pre-mirror url   ---> ` 更改为下载的离线包的位置
+
+![image-20230516161519634](image/petalinux/image-20230516161519634.png)
+
+注意：这里需要在最前面加上`file://`。
+
+配置`sstate`：
+
+![image-20230516161650342](image/petalinux/image-20230516161650342.png)
+
+其他配置可根据情况修改。推出前需保存。
+
+注意：若中途需要远程下载相应的app或者包文件，需要是能开启`Enable Network sstate feeds`。防止编译报错。
+
+若存在`app`或`packages`，需要进入文件系统配置中添加相应的选项。
+
+```bash
+petalinux-config -c rootfs
+```
+
+![image-20230516161900744](image/petalinux/image-20230516161900744.png)
+
+进入`build/conf`编辑`local.conf`
+
+![image-20230516163537432](image/petalinux/image-20230516163537432.png)
+
+配置完成后若想加`app`或者`packages`，需要在`project-spec`对应的`mate-user`中添加自己的文件，或有现成的`mate-user`，直接将此文件夹进行替换即可。
+
+配置完成后即可进行编译。
 
 ## 创建自定义模块
 
@@ -215,7 +280,7 @@ ERROR: Failed to generate System hardware Kconfig file.
 sudo apt-get install libtinfo5
 ```
 
-## ERROR /dev 
+## ERROR /dev <a name="dev"/>
 
 ```bash
 ERROR: There's no '/dev' on rootfs
