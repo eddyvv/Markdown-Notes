@@ -31,10 +31,6 @@ bash
 
 安装过程需要同意许可信息，输入三次y。
 
-
-
-
-
 # qemu启动
 
 ## 1. 生成.BIN镜象
@@ -238,6 +234,23 @@ petalinux-config -> Image packaging configuration -> INITRAMFS/INITRD Image name
 ```bash
 set substitute-path <当前搜索路径> <指的搜索路径>
 set substitute-path /usr/src/kernel /opt/linux-xlnx-xilinx-v2021.1
+```
+
+## 打包`BOOT.BIN`出现`Section image.ub.0 offset of 0x242C0 overlaps with prior section end address of 242C0C0`
+
+```bash
+***** Xilinx Bootgen v2021.1
+  **** Build date : May 28 2021-21:36:22
+    ** Copyright 1986-2021 Xilinx, Inc. All Rights Reserved.
+
+[ERROR]  : Section image.ub.0 offset of 0x242C0 overlaps with prior section end address of 242C0C0
+ERROR: Fail to create BOOT image
+```
+
+指定kernel的offset地址
+
+```bash
+petalinux-package --boot --format BIN --kernel --offset 0x0242d000 --fsbl --u-boot --pmufw --fpga ./images/linux/design_1_wrapper.bit --force
 ```
 
 

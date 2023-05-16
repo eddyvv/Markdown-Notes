@@ -119,10 +119,13 @@ sudo apt-get install gcc g++ libncurses5-dev build-essential kernel-package libs
 cp -v /boot/config-$(uname -r) .config
 ```
 
-1. 更改`CONFIG_SYSTEM_TRUSTED_KEYS `和`CONFIG_SYSTEM_REVOCATION_KEYS`
+```bash
+make menuconfig
+```
+
+1. 打开`.config`更改`CONFIG_SYSTEM_TRUSTED_KEYS `和`CONFIG_SYSTEM_REVOCATION_KEYS`
 
 ```bash
-CONFIG_MODULE_SIG_KEY=""
 CONFIG_SYSTEM_TRUSTED_KEYS=''
 CONFIG_SYSTEM_EXTRA_CERTIFICATE_SIZE=2048
 CONFIG_SYSTEM_REVOCATION_KEYS=""
@@ -354,6 +357,24 @@ INSTALL_MOD_STRIP=1
 sudo make INSTALL_MOD_STRIP=1 modules_install
 ```
 
+### 6. sign-file: : No such file or directory
+
+报错信息：
+
+![image-20230516082845572](image/Linux%E5%86%85%E6%A0%B8/image-20230516082845572.png)
+
+解决方法：
+
+ 将`.config`的 `CONFIG_MODULE_SIG_KEY="cert/signing_key.pem"`恢复后解决。
+
+```bash
+CONFIG_MODULE_SIG_KEY="cert/signing_key.pem"
+```
+
+
+
+
+
 
 
 ## 单独编译Linux内核的某一个模块
@@ -512,3 +533,4 @@ bin   dev  init  proc  root  sbin  sys   usr
 
 [linux——编译内核（ubuntu18.04+linux-5.6.4）](https://blog.csdn.net/bdwdwks/article/details/106294349)
 
+[编译内核 make modules_install报错SSL error:02001002:system library:fopen:No such file or directory_ssl: error:02001002_酱山楂的博客-CSDN博客](https://blog.csdn.net/weixin_52592969/article/details/127815302)
