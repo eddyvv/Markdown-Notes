@@ -58,6 +58,36 @@ petalinux-boot --qemu --prebuilt 3
 
 注意：若使用`petalinux2021`启动qemu需要在xilinx官网下载某个版本的`.bsp`，将其中的`pmu_rom_qemu_sha3.elf` 拷贝到`<plnx-proj-root>/pre-built/linux/images`下。
 
+```bash
+eddy@eddy:~/00_25G/test$ petalinux-boot --qemu --prebuilt 3
+[INFO] Sourcing buildtools
+INFO: No DTB has been specified, use the default one "/home/eddy/00_25G/test/pre-built/linux/images/system.dtb".
+INFO: No DTB has been specified, use the default one "/home/eddy/00_25G/test/pre-built/linux/images/system.dtb".
+INFO: Starting microblaze QEMU
+INFO: Starting the above QEMU command in the background
+INFO:  qemu-system-microblazeel -M microblaze-fdt   -serial mon:stdio -serial /dev/null -display none -kernel /home/eddy/00_25G/test/pre-built/linux/images/pmu_rom_qemu_sha3.elf -device loader,file=/home/eddy/00_25G/test/pre-built/linux/images/pmufw.elf      -hw-dtb /home/eddy/00_25G/test/pre-built/linux/images/zynqmp-qemu-multiarch-pmu.dtb -machine-path /tmp/tmp.zRXyRZk5bx -device loader,addr=0xfd1a0074,data=0x1011003,data-len=4 -device loader,addr=0xfd1a007C,data=0x1010f03,data-len=4 
+qemu-system-microblazeel: Failed to connect socket /tmp/tmp.zRXyRZk5bx/qemu-rport-_pmu@0: No such file or directory
+qemu-system-microblazeel: info: QEMU waiting for connection on: disconnected:unix:/tmp/tmp.zRXyRZk5bx/qemu-rport-_pmu@0,server
+INFO: TCP PORT is free 
+INFO: Starting aarch64 QEMU
+INFO:  qemu-system-aarch64 -M arm-generic-fdt   -serial /dev/null -serial mon:stdio -display none -device loader,file=/home/eddy/00_25G/test/pre-built/linux/images/bl31.elf,cpu-num=0 -device loader,file=/home/eddy/00_25G/test/pre-built/linux/images/rootfs.cpio.gz.u-boot,addr=0x04000000,force-raw -device loader,file=/home/eddy/00_25G/test/pre-built/linux/images/u-boot.elf -device loader,file=/home/eddy/00_25G/test/pre-built/linux/images/Image,addr=0x00200000,force-raw -device loader,file=/home/eddy/00_25G/test/pre-built/linux/images/system.dtb,addr=0x00100000,force-raw -device loader,file=/home/eddy/00_25G/test/pre-built/linux/images/boot.scr,addr=0x20000000,force-raw -gdb tcp::9000   -net nic,netdev=eth0 -netdev user,id=eth0,tftp=/tftpboot -net nic -net nic -net nic -net nic   -hw-dtb /home/eddy/00_25G/test/pre-built/linux/images/zynqmp-qemu-multiarch-arm.dtb -machine-path /tmp/tmp.zRXyRZk5bx -global xlnx,zynqmp-boot.cpu-num=0 -global xlnx,zynqmp-boot.use-pmufw=true   -m 4G
+QEMU 5.1.0 monitor - type 'help' for more information
+(qemu) qemu-system-aarch64: warning: hub port hub0port3 has no peer
+qemu-system-aarch64: warning: hub 0 is not connected to host network
+qemu-system-aarch64: warning: netdev hub0port3 has no peer
+qemu-system-aarch64: warning: requested NIC (__org.qemu.net4, model unspecified) was not created (not supported by this machine?)
+PMU Firmware 2021.1	Jun  6 2021   07:07:32
+PMU_ROM Version: xpbr-v8.1.0-0
+NOTICE:  ATF running on XCZUUNKN/QEMU v4/RTL0.0 at 0xfffea000
+NOTICE:  BL31: v2.4(release):xlnx_rebase_v2.4_2021.1_update1
+NOTICE:  BL31: Built : 08:27:07, Apr 28 2021
+
+```
+
+
+
+
+
 ## 打包BSP
 
 ```bash
@@ -130,7 +160,11 @@ petalinux-config -c u-boot
 
 对构建的工程进行实际的配置
 
+### 配置启动地址信息
 
+进入`u-boot Configuration  --->` `u-boot script configuration  --->`根据启动方式以及各文件大小进行配置。
+
+![image-20230516202016744](image/petalinux/image-20230516202016744.png)
 
 ## 工程编译
 
@@ -244,9 +278,157 @@ petalinux-create -t apps --template c --name myapp --enable
 
 ## `.tcl`文件
 
+```bash
+#connect
+fpga -no-revision-check -f design_1_wrapper.bit
+after 2000
+targets -set -filter {name =~ "PSU"} 
+mask_write 0xFFCA0038 0x1C0 0x1C0
+after 500
+#Load and run PMUFW
+targets -set -filter {name =~ "MicroBlaze PMU"} 
+dow pmu-firmware-250soc-zynqmp.elf
+con
+after 500
+#Reset A53, load and run FSBL
+targets -set -filter {name =~ "PS8" || name =~ "PSU"}
+mwr 0xffff0000 0x14000000;mask_write 0xFD1A0104 0x501 0x0	
+targets -set -filter {name =~ "Cortex-A53 #0"} 
+source psu_init.tcl
+dow fsbl-250soc-zynqmp.elf
+con 
+#Give FSBL time to run
+after 5000
+stop
+psu_ps_pl_isolation_removal; psu_ps_pl_reset_config
+after 500
+dow u-boot.elf 
+after 500
+dow arm-trusted-firmware.elf
+after 500
+con
+after 2000
+dow -data image.ub 0x8000000
+
+```
+
 
 
 # 常见问题
+
+## `boot.src`文件
+
+`boot.src` 文件是一个包含启动指令的文本文件，用于在 U-Boot 环境中设置启动选项和执行启动操作。该文件通常包含一些环境变量设置、内存和设备初始化、加载内核映像和设备树文件等操作。
+
+`connfig`文件启动地址信息相关配置：
+
+```bash
+#
+# JTAG/DDR image offsets
+#
+CONFIG_SUBSYSTEM_UBOOT_DEVICETREE_OFFSET=0x100000
+CONFIG_SUBSYSTEM_UBOOT_KERNEL_OFFSET=0x200000
+CONFIG_SUBSYSTEM_UBOOT_RAMDISK_IMAGE_OFFSET=0x4000000
+CONFIG_SUBSYSTEM_UBOOT_FIT_IMAGE_OFFSET=0x10000000
+
+#
+# QSPI/OSPI image offsets
+#
+CONFIG_SUBSYSTEM_UBOOT_QSPI_KERNEL_OFFSET=0xF00000
+CONFIG_SUBSYSTEM_UBOOT_QSPI_KERNEL_SIZE=0x1D00000
+CONFIG_SUBSYSTEM_UBOOT_QSPI_RAMDISK_OFFSET=0x4000000
+CONFIG_SUBSYSTEM_UBOOT_QSPI_RAMDISK_SIZE=0x4000000
+CONFIG_SUBSYSTEM_UBOOT_QSPI_FIT_IMAGE_OFFSET=0xF40000
+CONFIG_SUBSYSTEM_UBOOT_QSPI_FIT_IMAGE_SIZE=0x6400000
+
+#
+# NAND image offsets
+#
+CONFIG_SUBSYSTEM_UBOOT_NAND_KERNEL_OFFSET=0x4100000
+CONFIG_SUBSYSTEM_UBOOT_NAND_KERNEL_SIZE=0x3200000
+CONFIG_SUBSYSTEM_UBOOT_NAND_RAMDISK_OFFSET=0x7800000
+CONFIG_SUBSYSTEM_UBOOT_NAND_RAMDISK_SIZE=0x3200000
+CONFIG_SUBSYSTEM_UBOOT_NAND_FIT_IMAGE_OFFSET=0x4180000
+CONFIG_SUBSYSTEM_UBOOT_NAND_FIT_IMAGE_SIZE=0x6400000
+CONFIG_SUBSYSTEM_UBOOT_KERNEL_IMAGE="Image"
+CONFIG_SUBSYSTEM_UBOOT_FIT_IMAGE="image.ub"
+# CONFIG_SUBSYSTEM_UBOOT_EXT_DTB is not set
+```
+
+
+
+```bash
+'V\8i+M\9B\9E\F0\00\00	\E2\00\00\00\00\00\00\00\00\85w\9Cr\00Boot script\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00	\DA\00\00\00\00# This is a boot script for U-Boot
+# Generate boot.scr:
+# mkimage -c none -A arm -T script -d boot.cmd.default boot.scr
+#
+################
+
+
+for boot_target in ${boot_targets};
+do
+	echo "Trying to load boot images from ${boot_target}"
+	if test "${boot_target}" = "jtag" ; then
+		booti 0x00200000 0x04000000 0x00100000
+	fi
+	if test "${boot_target}" = "mmc0" || test "${boot_target}" = "mmc1" ; then
+		if test -e ${devtype} ${devnum}:${distro_bootpart} /uEnv.txt; then
+			fatload ${devtype} ${devnum}:${distro_bootpart} 0x00200000 uEnv.txt;
+			echo "Importing environment(uEnv.txt) from ${boot_target}..."
+			env import -t 0x00200000 $filesize
+			if test -n $uenvcmd; then
+				echo "Running uenvcmd ...";
+				run uenvcmd;
+			fi
+		fi
+		if test -e ${devtype} ${devnum}:${distro_bootpart} /image.ub; then
+			fatload ${devtype} ${devnum}:${distro_bootpart} 0x10000000 image.ub;
+			bootm 0x10000000;
+                fi
+		if test -e ${devtype} ${devnum}:${distro_bootpart} /Image; then
+			fatload ${devtype} ${devnum}:${distro_bootpart} 0x00200000 Image;;
+		fi
+		if test -e ${devtype} ${devnum}:${distro_bootpart} /system.dtb; then
+			fatload ${devtype} ${devnum}:${distro_bootpart} 0x00100000 system.dtb;
+		fi
+		if test -e ${devtype} ${devnum}:${distro_bootpart} /ramdisk.cpio.gz.u-boot && test "${skip_tinyramdisk}" != "yes"; then
+			fatload ${devtype} ${devnum}:${distro_bootpart} 0x04000000 ramdisk.cpio.gz.u-boot;
+			booti 0x00200000 0x04000000 0x00100000
+		fi
+		if test -e ${devtype} ${devnum}:${distro_bootpart} /rootfs.cpio.gz.u-boot && test "${skip_ramdisk}" != "yes"; then
+			fatload ${devtype} ${devnum}:${distro_bootpart} 0x04000000 rootfs.cpio.gz.u-boot;
+			booti 0x00200000 0x04000000 0x00100000
+		fi
+		booti 0x00200000 - 0x00100000
+	fi
+	if test "${boot_target}" = "xspi0" || test "${boot_target}" = "qspi" || test "${boot_target}" = "qspi0"; then
+		sf probe 0 0 0;
+		sf read 0x10000000 0xF40000 0x6400000
+		bootm 0x10000000;
+		echo "Booting using Fit image failed"
+
+		sf read 0x00200000 0xF00000 0x1D00000
+		sf read 0x04000000 0x4000000 0x4000000
+		booti 0x00200000 0x04000000 0x00100000;
+		echo "Booting using Separate images failed"
+	fi
+	if test "${boot_target}" = "nand" || test "${boot_target}" = "nand0"; then
+		nand info;
+		nand read 0x10000000 0x4180000 0x6400000
+		bootm 0x10000000;
+		echo "Booting using Fit image failed"
+
+		nand read 0x00200000 0x4100000 0x3200000
+		nand read 0x04000000 0x7800000 0x3200000
+		booti 0x00200000 0x04000000 0x00100000;
+		echo "Booting using Separate images failed"
+	fi
+done
+```
+
+
+
+
 
 ## petalinux 2022.2编译工程，显示bitbake版本不兼容[^2]
 
@@ -310,13 +492,33 @@ set substitute-path /usr/src/kernel /opt/linux-xlnx-xilinx-v2021.1
 ERROR: Fail to create BOOT image
 ```
 
-指定kernel的offset地址
+指定`kernel`的`offset`地址:
 
 ```bash
 petalinux-package --boot --format BIN --kernel --offset 0x0242d000 --fsbl --u-boot --pmufw --fpga ./images/linux/design_1_wrapper.bit --force
 ```
 
+## `qspi`启动后无法自动跳转至`kernel`
 
+```bash
+#flash读取至ddr    目的地址   kernel源地址   长度
+$zynqMP:sf read 0x80000000 0x0242d000 0x2800000
+
+$zynqMP:booti 0x80000000
+```
+
+## fit image
+
+![image-20230516202406387](image/petalinux/image-20230516202406387.png)
+
+在 Petalinux 配置中，QSPI/OSPI FIT 映像是指在 QSPI/OSPI NOR Flash 上存储的 FIT 映像。FIT 映像是一种灵活的引导映像格式，可以包含多个镜像文件（如内核、设备树、文件系统等），并且可以根据需要进行配置。
+
+根据上述文件在uboot阶段可以使用以下代码启动`kernel`
+
+```bash
+$zynqMP:sf read 0x10000000 0xF40000 0x6400000
+$zynqMP:bootm 0x10000000
+```
 
 # 如何修改设备树[^3]
 
@@ -415,3 +617,7 @@ dpu@dpu-PC:~/zjzhe/250soc_ernic/build/tmp/work/cortexa72-cortexa53-xilinx-linux/
 [Petalinux2020.2 开发ZYNQ的AXI DMA - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/478422063) petalinux创建modules
 
 [PetaLinux常用命令汇总 - schips - 博客园 (cnblogs.com)](https://www.cnblogs.com/schips/p/xilinx-petalinux-common-commands.html)
+
+[ petalinux-package qspi启动镜像的问题_uimage_offset_边城1987的博客-CSDN博客](https://blog.csdn.net/u011529140/article/details/70800460)
+
+[petalinux-package --boot --add --offset doesn't work as before (xilinx.com)](https://support.xilinx.com/s/question/0D52E00006hpeRTSAY/petalinuxpackage-boot-add-offset-doesnt-work-as-before?language=en_US)
