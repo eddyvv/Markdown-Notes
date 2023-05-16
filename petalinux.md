@@ -13,7 +13,7 @@ sudo mkdir petalinux2022.2
 sudo chmod 777 petalinux2022 ./
 ```
 
-3. 下载petalinux2022.2安装包
+3. 下载`petalinux2022.2`安装包
 
 地址：[Downloads (xilinx.com)](https://www.xilinx.com/support/download/index.html/content/xilinx/en/downloadNav/embedded-design-tools.html)
 
@@ -32,6 +32,8 @@ bash
 安装过程需要同意许可信息，输入三次y。
 
 # qemu启动
+
+参考《ug1144-petalinux-tools-reference-guide.pdf》
 
 ## 1. 生成.BIN镜象
 
@@ -60,15 +62,11 @@ petalinux-boot --qemu --prebuilt 3
 petalinux-package --bsp -p 2021-25-mcdma/ --hwsource eth_25g_2021-3-8/ -o 2021-25-mcdma.bsp --force
 ```
 
-
-
-
-
-psu_init 是FSBL中的一个函数，用于初始化PS端
+`psu_init` 是FSBL中的一个函数，用于初始化PS端
 
 # petalinux qemu 调试linux内核
 
-1. 启动qemu
+1. 启动`qemu`
 
    ```bash
    petalinux-boot --qemu --prebuilt 3
@@ -76,7 +74,7 @@ psu_init 是FSBL中的一个函数，用于初始化PS端
 
 2. 进入`<plnx-proj-root>image/linux`文件夹
 
-3. 进行gdb调试
+3. 进行`gdb`调试
 
    ```bash'
    petalinux-util --gdb vmlinux
@@ -87,7 +85,7 @@ psu_init 是FSBL中的一个函数，用于初始化PS端
 
 ## 调试步骤[^6]
 
-可参考《UG1144》 Debugging节 
+可参考《ug1144-petalinux-tools-reference-guide.pdf》 Debugging节 
 
 1. 启动qemu
 
