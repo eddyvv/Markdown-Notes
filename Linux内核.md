@@ -179,10 +179,8 @@ sudo make install
 3. 更改引导
 
 ```bash
-sudo update-initramfs -c -k 5.15.0
+sudo update-initramfs -c -k 5.10.0
 ```
-
-![image-20230515101421566](image/Linux%E5%86%85%E6%A0%B8/image-20230515101421566.png)
 
 4. 更改`grub`
 
@@ -203,8 +201,6 @@ GRUB_TIMEOUT=10
 sudo update-grub
 ```
 
-![image-20230515102533338](image/Linux%E5%86%85%E6%A0%B8/image-20230515102533338.png)
-
 5. 重启
 
 ```bash
@@ -217,13 +213,14 @@ reboot
 
 选择需要启动的内核版本
 
-![image-20230515104230612](image/Linux%E5%86%85%E6%A0%B8/image-20230515104230612.png)
+![image-20230517111217516](image/Linux%E5%86%85%E6%A0%B8/image-20230517111217516.png)
 
-![image-20230515101713706](image/Linux%E5%86%85%E6%A0%B8/image-20230515101713706.png)
+
+
 
 <center>安装新内核之前的内核版本</center>
 
-
+![image-20230517110513053](image/Linux%E5%86%85%E6%A0%B8/image-20230517110513053.png)
 
 <center>安装新内核之后</center>
 
@@ -262,11 +259,11 @@ sudo apt remove linux-modules-<版本>-generic
 卸载源码版本
 
 ```bash
-sudo rm /boot/vmlinuz-5.15.0
-sudo rm /boot/initrd.img-5.15.0 
-sudo rm /boot/System.map-5.15.0 
-sudo rm /boot/config-5.15.0 
-sudo rm -rf /lib/modules/5.15.0 
+sudo rm /boot/vmlinuz-5.10.0
+sudo rm /boot/initrd.img-5.10.0 
+sudo rm /boot/System.map-5.10.0 
+sudo rm /boot/config-5.10.0 
+sudo rm -rf /lib/modules/5.10.0 
 ```
 
 更新启动引导
@@ -274,8 +271,6 @@ sudo rm -rf /lib/modules/5.15.0
 ```bash
 sudo update-grub
 ```
-
-
 
 ## 常见问题
 
@@ -347,11 +342,11 @@ sudo update-grub
 INSTALL_MOD_STRIP=1
 ```
 
-标注，会导致`initrd`文件过大，Ubuntu 20.04所用的Grub 2.04无法支持过大的initrd文件（如500M），导致内核启动时卡在“loading initial ramdisk”（Can’t allocate initrd）。
+标注，会导致`initrd`文件过大，Ubuntu 20.04所用的Grub 2.04无法支持过大的initrd文件（如500M），导致内核启动时卡在`“loading initial ramdisk”（Can’t allocate initrd）`。
 
 可行的办法：
 
-安装模块时加上
+安装模块时加上`INSTALL_MOD_STRIP=1`
 
 ```bash
 sudo make INSTALL_MOD_STRIP=1 modules_install

@@ -158,3 +158,11 @@ git stash pop
 git push --force origin HEAD^:master
 ```
 
+## 上次commit并push时未提交部分修改的文件，将这些文件再次提交至上次的commit并推送至远程
+
+```bash
+git add .
+git commit --amend
+git push --force-with-lease
+```
+

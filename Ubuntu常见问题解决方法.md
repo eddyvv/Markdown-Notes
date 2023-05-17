@@ -170,5 +170,9 @@ sudo modprobe ib_core
 sudo modprobe rdma_ucm
 ```
 
+# 命令行打印export指定的变量值
 
+```bash
+printenv
+```
 
