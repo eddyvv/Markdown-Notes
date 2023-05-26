@@ -529,3 +529,6 @@ bin   dev  init  proc  root  sbin  sys   usr
 [linux——编译内核（ubuntu18.04+linux-5.6.4）](https://blog.csdn.net/bdwdwks/article/details/106294349)
 
 [编译内核 make modules_install报错SSL error:02001002:system library:fopen:No such file or directory_ssl: error:02001002_酱山楂的博客-CSDN博客](https://blog.csdn.net/weixin_52592969/article/details/127815302)
+
+[中文翻译 — The Linux Kernel documentation](https://www.kernel.org/doc/html/latest/translations/zh_CN/index.html) Linux内核中文文档
+

@@ -910,3 +910,5 @@ module_exit(pci_exit);
 [PCIE 之linux驱动分析 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/399102423)
 
 [第 12 章 PCI 驱动-Linux设备驱动第三版（中文版）- - (deansys.com)](http://www.deansys.com/doc/ldd3/ch12.html)
+
+[Linux PCI总线子系统 — The Linux Kernel documentation](https://www.kernel.org/doc/html/next/translations/zh_CN/PCI/)

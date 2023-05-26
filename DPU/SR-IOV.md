@@ -51,10 +51,6 @@
 
 # SR-IOV实现
 
-## VF的识别
-
-
-
 ## VF的BAR空间分配[^1]
 
 VF的BAR[n]空间是通过PF的SR-IOV Capability中每个VF_BAR[n]来分配的，和VF Configuration Space的BAR无关。
@@ -93,21 +89,97 @@ SR-IOV Capability中VF_BAR[n]的介绍如下：
 * VFn的每一个BAR[n]空间都依次在VF1的bar[n]后依次排列（大小是相同的）；
 * 虽然VF_BAR只显式的看到一份VF的BAR空间，但实际上有NumVFs份 BAR空间在每个VF_BAR后依次存在，然后对应就是每个VF的bar。（类似一个矩阵，PF有关联的NumVFs个VF,每个VF有6个BAR）。
 
+
+
 # SR-IOV启动流程
 
-### 命令行使能SR-IOV功能
+## 命令行使能SR-IOV功能
 
 ```bash
 echo 2 > /sys/bus/pci/devices/xxxx:xx:xx.x/sriov_numvfs
 ```
 
-### 使能过程
+## 初始化
+
+SR-IOV的初始化由内核函数`pci_init_capabilities`中调用`pci_iov_init`开始。
+
+```c
+pci_device_add
+	-->pci_init_capabilities
+		-->pci_iov_init
+```
+
+### pci_init_capabilities
+
+`pci_init_capabilities`函数用于初始化 PCI 设备功能。该函数的主要任务是检测 PCI 设备是否支持一些特定的功能（如 MSI 和 MSI-X 中断、SR-IOV 虚拟化等），并在必要时启用这些功能。
+
+`/drivers/pci/probe.c`
+
+```c
+static void pci_init_capabilities(struct pci_dev *dev)
+{
+	pci_ea_init(dev);		/* Enhanced Allocation */
+	pci_msi_init(dev);		/* Disable MSI */
+	pci_msix_init(dev);		/* Disable MSI-X */
+
+	/* Buffers for saving PCIe and PCI-X capabilities */
+	pci_allocate_cap_save_buffers(dev);
+
+	pci_pm_init(dev);		/* Power Management */
+	pci_vpd_init(dev);		/* Vital Product Data */
+	pci_configure_ari(dev);		/* Alternative Routing-ID Forwarding */
+	pci_iov_init(dev);		/* Single Root I/O Virtualization */
+	pci_ats_init(dev);		/* Address Translation Services */
+	pci_pri_init(dev);		/* Page Request Interface */
+	pci_pasid_init(dev);		/* Process Address Space ID */
+	pci_acs_init(dev);		/* Access Control Services */
+	pci_ptm_init(dev);		/* Precision Time Measurement */
+	pci_aer_init(dev);		/* Advanced Error Reporting */
+	pci_dpc_init(dev);		/* Downstream Port Containment */
+	pci_rcec_init(dev);		/* Root Complex Event Collector */
+
+	pcie_report_downtraining(dev);
+	pci_init_reset_methods(dev);
+}
+```
+
+### pci_iov_init
+
+`/drivers/pci/iov.c`
+
+```c
+/**
+ * pci_iov_init - initialize the IOV capability
+ * @dev: the PCI device
+ *
+ * Returns 0 on success, or negative on failure.
+ */
+int pci_iov_init(struct pci_dev *dev)
+{
+	int pos;
+
+	if (!pci_is_pcie(dev))
+		return -ENODEV;
+
+	pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_SRIOV);
+	if (pos)
+		return sriov_init(dev, pos);
+
+	return -ENODEV;
+}
+```
+
+
+
+
+
+## 使能过程
 
 由使能SR-IOV命令来看，入口为每个PCIe设备的`sriov_numvfs`节点。
 
 内核源码中SR-IOV相关代码位于`/drivers/pci/iov.c`文件下。
 
-#### sriov_numvfs_store
+### sriov_numvfs_store
 
 `/drivers/pci/iov.c`
 
@@ -180,7 +252,7 @@ exit:
 
 `sriov_numvfs_store()` 函数通常在设置一个支持 `SR-IOV（Single Root I/O Virtualization）`功能的 PCI 设备的 VF（Virtual Function）数量时被调用。当用户使用命令行写入VF到`/sys/bus/pci/devices/xxxx:xx:xx.x/sriov_numvfs`时，内核会调用`sriov_numvfs_store`函数来设置设备的VF以及启用SR-IOV功能。
 
-#### sriov_configure
+### sriov_configure
 
 从上面的内核驱动代码来看，支持SR-IOV的设备驱动需要实现以下回调函数接口:
 
@@ -201,7 +273,7 @@ static struct pci_driver xxx_driver {
 
 设备驱动编写的`sriov_configure`回调函数最终会调用内核接口`pci_enable_sriov`。
 
-#### pci_enable_sriov
+### pci_enable_sriov
 
 `/drivers/pci/iov.c`
 
@@ -225,7 +297,7 @@ int pci_enable_sriov(struct pci_dev *dev, int nr_virtfn)
 EXPORT_SYMBOL_GPL(pci_enable_sriov);
 ```
 
-##### sriov_enable
+#### sriov_enable
 
 `/drivers/pci/iov.c`
 
@@ -396,6 +468,6 @@ https://www.one-tab.com/page/BxsaLOL9S0y7W59cTFPlMw SR-IOV相关学习资料
 
 [深入理解SR-IOV和IO虚拟化 - Leo Hou (leo-hou.github.io)](https://leo-hou.github.io/2022/02/08/深入理解SR-IOV和IO虚拟化/)
 
-
+[3. PCI Express I/O 虚拟化指南 — The Linux Kernel documentation](https://www.kernel.org/doc/html/next/translations/zh_CN/PCI/pci-iov-howto.html) 简单的SR-IOV驱动框架
 
 [^1]:《PCI Express® Base Specification Revision 5.0.pdf》9.3.3.14节
