@@ -14,15 +14,15 @@
 
 ![07_pci_block](image/PCIe%E5%9F%BA%E7%A1%80/07_pci_block.png)
 
-## 配置空间
+# 配置空间
 
 PCI Express (PCIe) Type 0 设备的前 256 个字节分为两部分：**前 64 个字节是标准配置空间头部**（Header），用于描述设备的基本信息和功能；**后 192 个字节则是扩展配置空间**（Extended Configuration Space），用于描述设备的扩展能力和配置。
 
 在 PCI Express (PCIe) 中，设备被分为两种类型：Type 0 设备和 Type 1 设备。Type 0 设备和 Type 1 设备的区别在于它们的配置空间结构不同。
 
-### 设备分类
+## 设备分类
 
-#### Type 0
+### Type 0
 
 **Type 0** 设备是指普通的 PCIe 设备（RC和EP）。Type 0 设备的配置空间只包含一个配置空间头部，用于描述设备的基本信息，如 Vendor ID、Device ID、Class Code、Subclass Code 等等。Type 0 设备可以有多个 BAR（Base Address Registers），用于描述设备的地址空间信息。
 
@@ -32,7 +32,7 @@ PCI Express (PCIe) Type 0 设备的前 256 个字节分为两部分：**前 64 �
 
 > 《PCI Express_ Base Specification Revision 4.0 Version 0.3 ( PDFDrive ).pdf》7.5.2 p585
 
-#### Type 1
+### Type 1
 
 **Type 1** 设备是指 PCIe-to-PCI/PCI-X Bridge，它们可以将一个 PCIe 总线转换成一个或多个 PCI 总线，从而使 PCIe 总线上的 PCIe 设备可以与 PCI 总线上的 PCI 设备进行通信。Type 1 设备的配置空间包含一个配置空间头部和一个或多个 PCI-to-PCI Bridge (P2P) 或 CardBus Bridge (CB) 头部。Type 1 设备的每个 PCI-to-PCI Bridge (P2P) 或 CardBus Bridge (CB) 头部描述一个转换的 PCI 总线。Type 1 设备还有多个 BAR，其中每个 BAR 描述一个转换的 PCI 总线上的地址空间。
 
@@ -48,7 +48,7 @@ PCI Express (PCIe) Type 0 设备的前 256 个字节分为两部分：**前 64 �
 
 > 《PCI Express_ Base Specification Revision 4.0 Version 0.3 ( PDFDrive ).pdf》7.5.3 p587
 
-### 标准配置空间头
+## 标准配置空间头
 
 **标准配置空间头部包含了设备的基本信息和功能**，如设备的 Vendor ID、Device ID、Class Code、BAR (Base Address Register)、中断信息等。这些信息通常用于操作系统和设备驱动程序识别和配置设备，例如确定设备的驱动程序、分配资源、设置中断等等。标准配置空间头部的长度为 64 个字节，是固定的，不能被扩展。
 
@@ -58,7 +58,7 @@ PCI Express (PCIe) Type 0 设备的前 256 个字节分为两部分：**前 64 �
 
 > 《PCI Express Technology 3.0.pdf》Software Compatibility Characteristics p50
 
-#### Base Address Registers (BARs)
+### Base Address Registers (BARs)
 
 如下图所示：Type0 Header最多有6个BAR，而Type1 Header最多有两个BAR。这就意味着，对于Endpoint来说，最多可以拥有6个不同的地址空间。但是实际应用中基本上不会用到6个，通常1~3个BAR比较常见。
 
@@ -68,25 +68,17 @@ PCI Express (PCIe) Type 0 设备的前 256 个字节分为两部分：**前 64 �
 
 若某个设备的BAR没有被全部使用，则对应的BAR应被硬件全部设置为0，并且告知软件这些BAR是不可操作的。一旦BAR的值确定了（Have been programmed），其指定范围内的当前设备中的内部寄存器（或内部存储空间）就可以被访问了。当该设备确认某一个请求（Request）中的地址在自己的BAR的范围内，便会接受这请求。
 
-<center>写入全 1 后读取 BAR 的结果</center>
 
-| BAR Bits | 含义                                                         |
-| -------- | ------------------------------------------------------------ |
-| 0        | 读取为0b，表示一个内存请求, 读取位1b，表示一个IO请求。       |
-| 2:1      | 读为00b，指示目标仅支持解码32位地址                          |
-| 3        | 读取为0b，表示该请求是用于非可预取内存的（意味着读取具有副作用）；NP-MMIO。 |
-| 11:4     | 读取为全0，表示请求的大小（这些位是硬编码为0的）。           |
-| 31:12    | 读取为全1，因为软件尚未使用起始地址编程BAR的上位位。由于第12位是可写的最低有效位，请求的内存大小为2^12 = 4KB。 |
 
-##### 32位地址空间
+#### 32位Non‐Prefetchable Memory地址空间请求
 
 ![image-20230526161548097](image/PCIe%E5%9F%BA%E7%A1%80/image-20230526161548097.png)
 
 > 《PCI Express Technology 3.0.pdf》 BAR Example 1: 32-bit Memory Address Space Request p128
 
-设置建立一个BAR的基础步骤
+设置一个BAR的基础步骤
 
-32位地址空间操作BAR步骤：
+32位不可预取（Non‐Prefetchable）地址空间BAR配置步骤：
 
 1. PCIe设备上电，BAR处于未初始化状态，系统读取BAR0得到数据，硬件设备已经将低位bit固定为一个数值，来指示需要的memory的大小和类型，但是高位bit（可写可读的）则仍然是用X来表示，这代表它们的值还未知。系统软件将会首先把每个BAR都通过配置写操作来将可写入的bit写为全1（当然，被固定的低位bit不会受到配置写操作的影响）
 2. 对BAR0写入全1后的状态如上图的（2），这个操作确定了可写的最低位，这个最低位指示了请求的地址空间的大小，再上图中，最低位为12，则请求的BAR地址空间为2^12大小。低4位表明了该存储空间的一些属性（IO映射还是内存映射，32bit地址还是64bit地址，能否预取？有些寄存器只要一读，数据就会清掉，因此，对这样的空间，是不能预读的，因为预读会改变原来的值）
@@ -95,13 +87,71 @@ PCI Express (PCIe) Type 0 设备的前 256 个字节分为两部分：**前 64 �
 
 至此，对BAR0的配置就完成了。一旦软件启用了命令寄存器（Command register，偏移地址04h）中的内存地址译码（memory address decoding），那么这个设备就会接受所有地址在F900_0000h-F900_0FFFh（4KB大小）范围内的memory请求。
 
-##### 64位地址空间
+<center>对BAR0写入全 1 后读取 BAR 的结果</center>
+
+| BAR Bits | 含义                                                         |
+| -------- | ------------------------------------------------------------ |
+| 0        | 读取为0b，表示一个内存请求, 读取位1b，表示一个IO请求。       |
+| 2:1      | 读为00b，指示目标仅支持解码32位地址。                        |
+| 3        | 读取为0b，表示该请求是用于非可预取内存的（意味着读取具有副作用）；NP-MMIO。 |
+| 11:4     | 读取为全0，表示请求的大小（这些位是硬编码为0的）。           |
+| 31:12    | 读取为全1，因为软件尚未使用起始地址编程BAR的上位位。由于第12位是可写的最低有效位，请求的内存大小为2^12 = 4KB。 |
+
+#### 64位 Prefetchable Memory地址空间
 
 ![image-20230526164524101](image/PCIe%E5%9F%BA%E7%A1%80/image-20230526164524101.png)
 
 > 《PCI Express Technology 3.0.pdf》 BAR Example 2: 64-bit Memory Address Space Request p132
 
-### 扩展配置空间
+上图为请求64MB可预取内存（ prefetchable memory）地址空间BAR寄存器的配置过程。在配置超过32位地址空间时，采用两个连续的BAR寄存器来表示。
+
+64位可预取（Non‐Prefetchable）地址空间BAR配置步骤：
+
+1. 上电初始化状态，可看出硬件已将低32位BAR1的低位bit固定为了一个数值，用来指示需要的memory的大小和属性，低32位BAR1的高bit和高32位BAR2的所有bit均为未知值。
+2. 系统软件对两个BAR写入全1后，两BAR寄存器的值如上图（2）所示，可根据写入后所有位的值得知请求的BAR空间的大小为2^26。
+3. 系统软件根据PCIe设备所需求的空间的大小，在系统内存中申请一段空间。图中的（3）中展示了软件将在系统内存中分配的地址写入BAR寄存器后的结果。如图所示，高32位BAR的bit1置1，低位BAR的bit30置1，表示给PCIe设备分配的系统内存地址空间为2_4000_0000h。
+
+至此，对BAR Pair（BAR 1和BAR 2）的配置就已经完成了。一旦软件启用了命令寄存器（Command register，偏移地址04h）中的内存地址译码，那么这个设备就会接受所有地址在2_4000_0000h-2_4300_0000h（64MB大小）这个范围内的memory请求。
+
+<center>对BAR1、BAR2写入全1后</center>
+
+| BAR  | BAR Bits | 含义                                                         |
+| ---- | -------- | ------------------------------------------------------------ |
+| 低   | 0        | 读为0b，表示当前请求为Memory请求。                           |
+| 低   | 2:1      | 读为10b，表示支持64位地址解析，并且下一个顺序BAR包含地址信息的高32位。 |
+| 低   | 3        | 读为1b，表示请求时针对可预取内存；P-MMIO                     |
+| 低   | 25：4    | 读为全0，表示请求的内存大小。                                |
+| 低   | 31：26   | 读取为全1，因为软件还未将配置的内存地址写入BAR。此处还表示内存地址空间请求的大小为2^26=64MB。 |
+| 高   | 31：0    | 读取为全1，这些位将在系统软件写入分配的内存地址的高32位而改变。 |
+
+#### IO地址空间请求
+
+![image-20230527144317426](image/PCIe%E5%9F%BA%E7%A1%80/image-20230527144317426.png)
+
+>  《PCI Express Technology 3.0.pdf》 BAR Example 3: IO Address Space Request p133
+
+在前面的两个Memory空间配置的基础上，当前的设备还需要请求IO空间，上图为配置请求IO空间的步骤。
+
+32位IO地址空间的配置步骤：
+
+1. 上电初始化，硬件将BAR3的低几位bit根据设备需要的属性配置为相应的值，如图中（1）所示。之后系统软件对BAR3写入全1。
+2. 在系统软件对BAR3写入全1后，根据写之后寄存器的值评估请求的地址空间的大小和属性，如图中（2）所示。
+3. 读取BAR3的内容之后，软件知道需要申请256byte大小的IO地址空间，在进行分配之后，将申请的空间的起始地址写入BAR3，如图中（3）所示。
+
+至此，对BAR3的IO空间的配置已完成，一旦软件启用了命令寄存器（Command register，偏移地址04h）中的IO地址译码，那么这个设备就会接受并响应所有地址在4000h-40FFh（256Byte大小）这个范围内的IO事务。
+
+<center>BAR3写入全1之后读取的结果</center>
+
+| BAR Bits | 含义                                                         |
+| -------- | ------------------------------------------------------------ |
+| 0        | 读取为1b，表示IO请求。                                       |
+| 1        | 保留。                                                       |
+| 7:2      | 读为0b，表示请求的大小                                       |
+| 31:8     | 读为全1，当软件写入分配的系统内存地址空间值后改变，由于最低位为8，所以IO请求的大小为2^8=64MB |
+
+
+
+## 扩展配置空间
 
 **扩展配置空间则是用来描述设备的扩展能力和配置的**。PCIe 设备可以实现许多扩展功能，例如 MSI (Message Signaled Interrupt)、MSI-X (Message Signaled Interrupts eXtended)、SR-IOV (Single Root I/O Virtualization)、AER (Advanced Error Reporting)、L1 Substate Power Management等等，这些能力需要使用扩展配置空间进行描述和配置。扩展配置空间的地址范围为 0x100 到 0x3FF，长度为 256 个字节。扩展配置空间中的每个字节都可以被读取和写入，用于描述设备的各种扩展能力和配置。PCIe 规范定义了许多不同的扩展能力结构体，如 PCIe Capability、MSI Capability、MSI-X Capability、SR-IOV Capability 等等，这些结构体包含了各种字段和寄存器，用于描述设备的扩展能力和配置。
 
@@ -116,9 +166,9 @@ PCI Express (PCIe) Type 0 设备的前 256 个字节分为两部分：**前 64 �
 
 > 《PCI Express Technology 3.0.pdf》Extended Configuration Space p90
 
-## PCI中断
+# PCI中断
 
-### INTx中断
+## INTx中断
 
 ![image.png](image/PCIe%E5%9F%BA%E7%A1%80/1000019445-6366943279216546732835967.png)
 
@@ -128,13 +178,13 @@ PCI Express (PCIe) Type 0 设备的前 256 个字节分为两部分：**前 64 �
 
 
 
-### MSI中断
+## MSI中断
 
 
 
 
 
-### MSI-X中断
+## MSI-X中断
 
 
 
@@ -144,7 +194,7 @@ PCI Express (PCIe) Type 0 设备的前 256 个字节分为两部分：**前 64 �
 
 
 
-## 兼容PCI协议
+# 兼容PCI协议
 
 PCIe总线 是 PCI总线 的升级版，因此 PCIe 设备的配置空间需要兼容 PCI 协议，以确保与老式 PCI 设备的兼容性和互操作性。
 
@@ -263,3 +313,4 @@ consistent_dma_mask_bits  enable           local_cpus     power_state  resource0
 
 [《PCI Express Technology 3.0》译文合集 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/600796941)
 
+[Chinese-Translation-of-PCI-Express-Technology-/4 地址空间与事务路由.md at c2085cd98ef27de801b358b62baf881f1d93a31b · ljgibbslf/Chinese-Translation-of-PCI-Express-Technology- · GitHub](https://github.com/ljgibbslf/Chinese-Translation-of-PCI-Express-Technology-/blob/HEAD/4 地址空间与事务路由.md)
