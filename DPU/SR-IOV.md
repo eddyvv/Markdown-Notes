@@ -51,7 +51,19 @@
 
 # SR-IOV实现
 
-## VF的BAR空间分配[^1]
+## 物理功能 (Physical Function, PF)
+
+用于支持 SR-IOV 功能的 PCI 功能，如 SR-IOV 规范中定义。PF 包含 SR-IOV 功能结构，用于管理 SR-IOV 功能。PF 是全功能的 PCIe 功能，可以像其他任何 PCIe 设备一样进行发现、管理和处理。PF 拥有完全配置资源，可以用于配置或控制 PCIe 设备。
+
+## 虚拟功能 (Virtual Function, VF)
+
+与物理功能关联的一种功能。VF 是一种轻量级 PCIe 功能，可以与物理功能以及与同一物理功能关联的其他 VF 共享一个或多个物理资源。VF 仅允许拥有用于其自身行为的配置资源。
+
+每个 SR-IOV 设备都可有一个物理功能 (Physical Function, PF)，并且每个 PF 最多可有 64,000 个与其关联的虚拟功能 (Virtual Function, VF)。PF 可以通过寄存器创建 VF，这些寄存器设计有专用于此目的的属性。
+
+一旦在 PF 中启用了 SR-IOV，就可以通过 PF 的总线、设备和功能编号（路由 ID）访问各个 VF 的 PCI 配置空间。每个 VF 都具有一个 PCI 内存空间，用于映射其寄存器集。VF 设备驱动程序对寄存器集进行操作以启用其功能，并且显示为实际存在的 PCI 设备。创建 VF 后，可以直接将其指定给 IO 来宾域或各个应用程序（如裸机平台上的 Oracle Solaris Zones）。此功能使得虚拟功能可以共享物理设备，并在没有 CPU 和虚拟机管理程序软件开销的情况下执行 I/O。
+
+### VF的BAR空间分配[^1]
 
 VF的BAR[n]空间是通过PF的SR-IOV Capability中每个VF_BAR[n]来分配的，和VF Configuration Space的BAR无关。
 
@@ -77,6 +89,8 @@ SR-IOV Capability中VF_BAR[n]的介绍如下：
 >VF BARs只能支持32位和64位内存空间映射。VFs中不支持PCI I/O空间。所有VF BARx的bit0必须是只读的0值，除了用于映射64位内存VF BAR上32位的VF BARx。
 >对齐要求和大小读取是针对单个VF的，但是当使能VF Enable和VF MSE时，该BAR实际上包含所有(NumVFs多个) VF BAR的BAR地址空间。
 
+> 《PCI Express® Base Specification Revision 5.0.pdf》9.3.3 SR-IOV Extended Capability
+
 下图为PF的BAR0，VF的BAR0和每个VF的BAR0的对应关系，其他的BAR1~BAR6都相同。
 
 ![image-20230522103024936](image/SR-IOV/image-20230522103024936.png)
@@ -93,20 +107,113 @@ SR-IOV Capability中VF_BAR[n]的介绍如下：
 
 # SR-IOV启动流程
 
+## 硬件条件
+
+1. CPU 支持 Intel VT-x 和 VT-D （或者 AMD 的 SVM 和 IOMMU）；
+2. 有支持 SR-IOV 规范的设备；
+3. CPU必须支持IOMMU（比如英特尔的 VT-d 或者AMD的 AMD-Vi，Power8 处理器默认支持IOMMU），并且在BIOS中已开启；
+4. 支持PCI-SIG* Single Root I/O Virtualization and Sharing(SR-IOV)，并且在BIOS中已开启。
+
 ## 命令行使能SR-IOV功能
 
 ```bash
 echo 2 > /sys/bus/pci/devices/xxxx:xx:xx.x/sriov_numvfs
 ```
 
+### `sriov_numvfs`的产生
+
+`/drivers/pci/iov.c`
+
+```c
+static DEVICE_ATTR_RO(sriov_totalvfs);
+static DEVICE_ATTR_RW(sriov_numvfs);
+static DEVICE_ATTR_RO(sriov_offset);
+static DEVICE_ATTR_RO(sriov_stride);
+static DEVICE_ATTR_RO(sriov_vf_device);
+static DEVICE_ATTR_RW(sriov_drivers_autoprobe);
+
+static struct attribute *sriov_pf_dev_attrs[] = {
+	&dev_attr_sriov_totalvfs.attr,
+	&dev_attr_sriov_numvfs.attr,
+	&dev_attr_sriov_offset.attr,
+	&dev_attr_sriov_stride.attr,
+	&dev_attr_sriov_vf_device.attr,
+	&dev_attr_sriov_drivers_autoprobe.attr,
+#ifdef CONFIG_PCI_MSI
+	&dev_attr_sriov_vf_total_msix.attr,
+#endif
+	NULL,
+};
+
+const struct attribute_group sriov_pf_dev_attr_group = {
+	.attrs = sriov_pf_dev_attrs,
+	.is_visible = sriov_pf_attrs_are_visible,
+};
+```
+
+`DEVICE_ATTR_RW`宏可以快速定义一个可读写的sysfs属性，并提供了相应的读取和写入回调函数，这个属性可以通过`/sys/bus/pci/devices/xxxx:xx:xx.x/sriov_numvfs`文件进行读写操作。
+
+`/drivers/pci/pci-sysfs.c`
+
+```c
+
+static const struct attribute_group *pci_dev_attr_groups[] = {
+	&pci_dev_attr_group,
+	&pci_dev_hp_attr_group,
+#ifdef CONFIG_PCI_IOV
+	&sriov_pf_dev_attr_group,
+	&sriov_vf_dev_attr_group,
+#endif
+	&pci_bridge_attr_group,
+	&pcie_dev_attr_group,
+#ifdef CONFIG_PCIEAER
+	&aer_stats_attr_group,
+#endif
+#ifdef CONFIG_PCIEASPM
+	&aspm_ctrl_attr_group,
+#endif
+	NULL,
+};
+
+const struct device_type pci_dev_type = {
+	.groups = pci_dev_attr_groups,
+};
+```
+
+`/drivers/pci/probe.c`
+
+```c
+struct pci_dev *pci_alloc_dev(struct pci_bus *bus)
+{
+	struct pci_dev *dev;
+
+	dev = kzalloc(sizeof(struct pci_dev), GFP_KERNEL);
+	if (!dev)
+		return NULL;
+
+	INIT_LIST_HEAD(&dev->bus_list);
+	dev->dev.type = &pci_dev_type;
+	dev->bus = pci_bus_get(bus);
+
+	return dev;
+}
+EXPORT_SYMBOL(pci_alloc_dev);
+```
+
+
+
 ## 初始化
 
 SR-IOV的初始化由内核函数`pci_init_capabilities`中调用`pci_iov_init`开始。
 
 ```c
-pci_device_add
-	-->pci_init_capabilities
-		-->pci_iov_init
+pci_scan_single_device
+	-->pci_scan_device
+    	-->pci_alloc_dev
+    		-->dev->dev.type = &pci_dev_type; /* 用于生成sysfs里/sys/bus/pci/devices/xxxx:xx:xx.x/sriov_numvfs文件 */
+	-->pci_device_add
+		-->pci_init_capabilities
+			-->pci_iov_init
 ```
 
 ### pci_init_capabilities
@@ -161,6 +268,7 @@ int pci_iov_init(struct pci_dev *dev)
 	if (!pci_is_pcie(dev))
 		return -ENODEV;
 
+    /* 查找Capability结构体，确定设备是否支持SR-IOV功能 */
 	pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_SRIOV);
 	if (pos)
 		return sriov_init(dev, pos);
@@ -448,6 +556,8 @@ GPA（Guest Physical Address）虚拟机访问的物理地址；
 
 《PCI Express® Base Specification Revision 5.0.pdf》第9节
 
+[PCIe_BGONE的博客-CSDN博客](https://blog.csdn.net/bgone/category_9450900.html)
+
 [Single Root IO Virtualization - SR-IOV - NVIDIA Networking Docs](https://docs.nvidia.com/networking/m/view-rendered-page.action?abstractPageId=19798214) mellanox网卡开启SR-IOV
 
 [PCIe\] SR-IOV （单根虚拟化） 及linux驱动浅析（device的PF和VF及其驱动）_pcie pf vf_Lenz's law的博客-CSDN博客](https://blog.csdn.net/u010443710/article/details/104756445)
@@ -470,4 +580,9 @@ https://www.one-tab.com/page/BxsaLOL9S0y7W59cTFPlMw SR-IOV相关学习资料
 
 [3. PCI Express I/O 虚拟化指南 — The Linux Kernel documentation](https://www.kernel.org/doc/html/next/translations/zh_CN/PCI/pci-iov-howto.html) 简单的SR-IOV驱动框架
 
+[KVM 介绍（4）：I/O 设备直接分配和 SR-IOV KVM PCI/PCIe Pass-Through SR-IOV\] - SammyLiu - 博客园 (cnblogs.com)](https://www.cnblogs.com/sammyliu/p/4548194.html)
+
+
+
 [^1]:《PCI Express® Base Specification Revision 5.0.pdf》9.3.3.14节
+

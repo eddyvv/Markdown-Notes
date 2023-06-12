@@ -6,6 +6,12 @@
 
 ## 拓扑
 
+PCIe采用树拓扑，其体系结构中一般由Root Complex、Switch、EndPoint等类型的PCIe设备组成，其中**`Root Complex`**（简称RC）：根设备，主要负责分析和生成PCIe消息。RC接收来自CPU的IO命令，生成对应的PCIe消息，接受来自设备的TLP消息，解析数据并传送到CPU和存储器。
+
+**`Switch`**：PCIe适配器设备，它主要用于扩展PCIe总线。 与PCI并行总线不同，PCIe总线采用快速差分总线和端到端连接方式，因此每个PCIe链路两端只能连接一个设备。 如果需要装载更多的PCIe设备，则必须使用交换机适配器。 在linux上看不到switch。 在软件级别，可以看到交换机的上行端口(upstream port，靠近RC的一侧)和下行端口(downstream port )。
+
+**PCIe Endponit**（简称EP）：PCIe终端设备是PCIe树结构的叶节点。 例如，网卡、NVME卡和显卡都是PCIe ep设备
+
 ![image-20230526145832280](image/PCIe%E5%9F%BA%E7%A1%80/image-20230526145832280.png)
 
 > 《PCI Express Technology 3.0.pdf》Chapter 3: Configuration Overview p87
@@ -199,26 +205,26 @@ lspci -vvvxxxx -s <id>
 | ID     | Capability                                                   |
 | ------ | ------------------------------------------------------------ |
 | 00h    | 保留                                                         |
-| 01h    | PCI电源管理接口：此功能结构提供了标准接口，以控制设备功能中的电源管理功能。_PCI Bus Power Management Interface Specification_ 已完整记录。 |
+| 01h    | PCI Power Management InterfacePCI（电源管理接口）：此功能结构提供了标准接口，以控制设备功能中的电源管理功能。_PCI Bus Power Management Interface Specification_ 已完整记录。 |
 | 02h    | AGP：此功能结构标识能够使用加速图形端口功能的控制器。完整的文档可以在 _Accelerated Graphics Port Interface Specification_ 查看。 |
 | 03h    | VPD：此功能结构标识支持重要产品数据的设备功能。此功能的完整文档可以在_PCI Local Bus Specification_ 中查看 |
-| 04h    | 插槽标识(slot identification)：此功能结构标识提供外部扩展功能的桥梁。有关此功能的完整文档可以_PCI-to-PCI Bridge Architecture Specification_找到。 |
-| 05h    | 消息信号中断：此功能结构标识了可以执行消息信号中断传递的设备功能。此功能的完整文档可以在_PCI Local Bus Specification_找到。 |
-| 06h    | CompactPCI热插拔：此功能结构提供了一个标准接口，用于控制和感测设备中的状态，该设备支持热插拔插入和提取CompactPCI系统。此功能记录在_CompactPCI Hot Swap Specification PICMG 2.1, R1.0_中，可在http://www.picmg.org获得。 |
+| 04h    | Slot Identification：此功能结构标识提供外部扩展功能的桥梁。有关此功能的完整文档可以_PCI-to-PCI Bridge Architecture Specification_找到。 |
+| 05h    | Message Signaled Interrupts（MSI）：此功能结构标识了可以执行消息信号中断传递的设备功能。此功能的完整文档可以在_PCI Local Bus Specification_找到。 |
+| 06h    | CompactPCI Hot Swap：此功能结构提供了一个标准接口，用于控制和感测设备中的状态，该设备支持热插拔插入和提取CompactPCI系统。此功能记录在_CompactPCI Hot Swap Specification PICMG 2.1, R1.0_中，可在http://www.picmg.org获得。 |
 | 07h    | PCI-X：有关详细信息，请参阅_PCI-X Protocol Addendum to the PCI Local Bus Specification_协议附录。 |
 | 08h    | HyperTransport：此功能结构为实现HyperTransport技术链路的设备提供控制和状态。有关详细信息，请参阅_HyperTransport I/O Link Specification_，网址为http://www.hypertransport.org. |
-| 09h    | 厂商特定(Vendor Specific)：该Capability结构允许设备厂商使用Capability机制来公开特定于厂商的寄存器。在Capability结构中，紧随下一个指针后面的字节被定义为长度字段。该长度字段提供了Capability结构中字节数的数量（包括Capability ID和下一个指针字节）。Capability结构中剩余的所有字节都是特定于厂商的。 |
-| 0Ah    | 调试端口（Debug port ）                                      |
-| 0Bh    | CompactPCI中央资源控制(CompactPCI central resource control)：此能力的定义可以在_PICMG 2.13_规范中找到（[http://www.picmg.com](http://www.picmg.com)) |
-| 0Ch    | PCI热插拔：此功能ID表示相关设备符合标准热插拔控制器型号。    |
-| 0Dh    | PCI桥子系统供应商ID                                          |
+| 09h    | Vendor Specific（厂商特定）：该Capability结构允许设备厂商使用Capability机制来公开特定于厂商的寄存器。在Capability结构中，紧随下一个指针后面的字节被定义为长度字段。该长度字段提供了Capability结构中字节数的数量（包括Capability ID和下一个指针字节）。Capability结构中剩余的所有字节都是特定于厂商的。 |
+| 0Ah    | Debug port （调试端口）                                      |
+| 0Bh    | CompactPCI central resource control（CompactPCI中央资源控制）：此能力的定义可以在_PICMG 2.13_规范中找到（[http://www.picmg.com](http://www.picmg.com)) |
+| 0Ch    | PCI Hot-Plug：此功能ID表示相关设备符合标准热插拔控制器型号。 |
+| 0Dh    | PCI Bridge Subsystem Vendor ID（PCI桥子系统供应商ID）        |
 | 0Eh    | AGP 8x                                                       |
-| 0Fh    | 安全设备                                                     |
+| 0Fh    | Secure Device（安全设备）                                    |
 | 10h    | PCI Express                                                  |
 | 11h    | MSI-X：此功能标识标识基本MSI功能的可选扩展                   |
-| 12h    | 串行（Serial）ATA数据/索引配置                               |
-| 13h    | 高级功能(AF)：此功能的完整文档可在_Advanced Capabilities for Conventional PCI ECN_中找到 |
-| 14h    | 增强型分配                                                   |
+| 12h    | Serial ATA Data/Index Configuration                          |
+| 13h    | Advanced Features (AF) （高级功能(AF)）：此功能的完整文档可在_Advanced Capabilities for Conventional PCI ECN_中找到 |
+| 14h    | Enhanced Allocation（增强型分配）                            |
 | Others | 保留                                                         |
 
 > 《PCI Code and ID Assignment Specification Revision 1.11》2. Capability IDs p22
@@ -263,41 +269,58 @@ Linux内核中对Capility IDs的定义：
 
 见 [扩展配置空间](#ExtenCapabilites)
 
-Extended Capabilities IDs
+### Extended Capabilities IDs
 
 | ID    | Extended Capability                                          |
 | ----- | ------------------------------------------------------------ |
-| 0000h | NULL Capability——除了扩展能力头中的寄存器外，该能力不包含其他寄存器。 |
-| 0001h | 高级错误报告 (AER)                                           |
-| 0002h | 虚拟通道 (VC) – 在设备中不存在 MFVC 扩展上限结构时使用       |
-| 0003h | 设备序列号                                                   |
+| 0000h | NULL Capability：除了扩展能力头中的寄存器外，该能力不包含其他寄存器。 |
+| 0001h | Advanced Error Reporting (AER) ：（高级错误报告 (AER)）      |
+| 0002h | Virtual Channel (VC)（虚拟通道 (VC)）： 在设备中不存在 MFVC 扩展上限结构时使用 |
+| 0003h | Device Serial Number（设备序列号）                           |
 | 0004h | Power Budgeting                                              |
 | 0005h | Root Complex Link Declaration                                |
-| 0006h | RC 内部链接控制                                              |
+| 0006h | Root Complex Internal Link Control                           |
 | 0007h | Root Complex Event Collector Endpoint Association            |
-| 0008h | 多功能虚拟通道 (MFVC)                                        |
-| 0009h | 虚拟通道 (VC) – 在设备中存在 MFVC 扩展上限结构时使用         |
+| 0008h | Multi-Function Virtual Channel (MFVC)（多功能虚拟通道 (MFVC)） |
+| 0009h | Virtual Channel (VC)（虚拟通道 (VC) ）：在设备中存在 MFVC 扩展上限结构时使用 |
 | 000Ah | Root Complex Register Block (RCRB) Header                    |
-| 000Bh | 厂商特定扩展功能 (VSEC)                                      |
-| 000Ch | 配置访问关联 (CAC) – 由 PCI Express ECN 的可信配置空间 (TCS) 定义，不再受支持 |
-| 000Dh | 访问控制服务 (ACS)                                           |
-| 000Eh | 替代路由 ID 解释 (ARI)                                       |
-| 000Fh | 地址转换服务 (ATS)                                           |
-| 0010h | 单根 I/O 虚拟化 (SR-IOV)                                     |
-| 0011h | 多根 I/O 虚拟化 (MR-IOV) – 在多根 I/O 虚拟化和共享规范中定义 |
+| 000Bh | Vendor-Specific Extended Capability (VSEC) （厂商特定扩展功能 (VSEC)） |
+| 000Ch | Configuration Access Correlation (CAC)（配置访问关联 (CAC) ）：由 PCI Express ECN 的可信配置空间 (TCS) 定义，不再受支持 |
+| 000Dh | Access Control Services (ACS) （访问控制服务 (ACS)）         |
+| 000Eh | Alternative Routing-ID Interpretation (ARI) （替代路由 ID 解释 (ARI)） |
+| 000Fh | Address Translation Services (ATS) （地址转换服务 (ATS)）    |
+| 0010h | Single Root I/O Virtualization (SR-IOV) （单根 I/O 虚拟化 (SR-IOV)） |
+| 0011h | Multi-Root I/O Virtualization (MR-IOV)（多根 I/O 虚拟化 (MR-IOV) ）：在多根 I/O 虚拟化和共享规范中定义 |
 | 0012h | Multicast                                                    |
-|       |                                                              |
-|       |                                                              |
-|       |                                                              |
-|       |                                                              |
-|       |                                                              |
-|       |                                                              |
-|       |                                                              |
-|       |                                                              |
-|       |                                                              |
-|       |                                                              |
+| 0013h | Page Request Interface (PRI) （页面请求接口 (PRI)）          |
+| 0014h | Reserved for AMD                                             |
+| 0015h | Resizable BAR（可调整大小的 BAR）                            |
+| 0016h | Dynamic Power Allocation (DPA) （动态功率分配 (DPA)）        |
+| 0017h | TPH Requester                                                |
+| 0018h | Latency Tolerance Reporting (LTR)（延迟容忍报告 (LTR)）      |
+| 0019h | Secondary PCI Express（二级 PCI Express）                    |
+| 001Ah | Protocol Multiplexing (PMUX) （协议复用 (PMUX)）             |
+| 001Bh | Process Address Space ID (PASID) （进程地址空间 ID (PASID)） |
+| 001Ch | LN Requester (LNR)                                           |
+| 001Dh | Downstream Port Containment (DPC)                            |
+| 001Eh | L1 PM Substates                                              |
+| 001Fh | Precision Time Measurement (PTM) （精密时间测量 (PTM)）      |
+| 0020h | PCI Express over M-PHY (M-PCIe)                              |
+| 0021h | FRS Queueing                                                 |
+| 0022h | Readiness Time Reporting                                     |
+| 0023h | Designated Vendor-Specific Extended Capability（指定供应商特定的扩展功能） |
+| 0024h | VF Resizable BAR                                             |
+| 0025h | Data Link Feature                                            |
+| 0026h | Physical Layer 16.0 GT/s                                     |
+| 0027h | Lane Margining at the Receiver                               |
+| 0028h | Hierarchy ID                                                 |
+| 0029h | Native PCIe Enclosure Management (NPEM)                      |
+| 002Ah | Physical Layer 32.0 GT/s                                     |
+| 002Bh | Alternate Protocol                                           |
+| 002Ch | System Firmware Intermediary (SFI)                           |
+| other | 保留                                                         |
 
-
+> 《PCI Code and ID Assignment Specification Revision 1.11.pdf》3. Extended Capability IDs p24
 
 # 扩展配置空间（0x100h~0x3FFh）<a name="ExtenCapabilites"/>
 
@@ -382,11 +405,141 @@ PCIE的MSI-X相关信息存在两个地方，一个是PCIE Capability中，存�
 
 ## SR-IOV Capability结构
 
-![image-20230530191259771](image/PCIe%E5%9F%BA%E7%A1%80/image-20230530191259771.png)
+这里定义的 SR-IOV Extended Capability 是 PCIe 扩展能力，必须在每个支持 SR-IOV 的 PF 中实现。该能力用于描述和控制 PF 的 SR-IOV Capabilities。
 
-> 《Single Root IO Virtualization and Sharing Specification Revision 1.0.pdf》3.3. SR-IOV Extended Capability p36
+![image-20230531145031018](image/PCIe%E5%9F%BA%E7%A1%80/image-20230531145031018.png)
+
+> 《PCI Express® Base Specification Revision 5.0.pdf》9.3.3 SR-IOV Extended Capability p1121
 
 寄存器位段描述参见《Single Root IO Virtualization and Sharing Specification Revision 1.0.pdf》3.3. SR-IOV Extended Capability或《PCI Express® Base Specification Revision 5.0.pdf》9.3.3 SR-IOV Extended Capability
+
+### SR-IOV Extended Capability Header (Offset 00h)
+
+| bit   | 描述                                                         | 属性 |
+| ----- | ------------------------------------------------------------ | ---- |
+| 15:0  | **PCI Express Extended Capability ID**：该字段是 PCI-SIG 定义的 ID 号，指示扩展功能的性质和格式。<br/>SR-IOV 扩展能力的扩展能力 ID 是 0010h。 | RO   |
+| 19:16 | **Capability Version**：该字段是一个 PCI-SIG 定义的版本号，它指示存在的 Capability 结构的版本。<br/>对于此版本的规范，必须为 1h。 | RO   |
+| 31:20 | **Next Capability Offset**：该字段包含到下一个 PCI Express Capability 结构的偏移量，如果 Capabilities 的链表中不存在其他项，则为 000h。<br/>对于在配置空间中实现的扩展功能，此偏移量是相对于 PCI 兼容配置空间的开头的，因此必须始终为 000h（用于终止功能列表）或大于 0FFh。 | RO   |
+
+### SR-IOV Capabilities Register (Offset 04h)
+
+| bit   | 描述                                                         | 属性       |
+| ----- | ------------------------------------------------------------ | ---------- |
+| 0     | **VF Migration Capable**：如果设置，PF 是 Migration Capable 并且在 Migration Capable MR-PCIM 下运行。 | RO         |
+| 1     | **ARI Capable Hierarchy Preserved**<br/>PCI Express 端点：如果设置，ARI Capable Hierarchy 位将在某些电源状态转换中保留。<br/>RCiEP：不适用 - 强烈建议将该位硬连线到 0b。 | RO         |
+| 2     | **VF 10-Bit Tag Requester Supported**：如果设置，所有 VF 必须支持 10-Bit Tag Requester 功能。 如果清除，则 VF 不得支持 10 位标记请求器功能。<br/>如果 PF 的设备功能 2 寄存器中的 10 位标签请求者支持位为清除，则该位必须为清除。 | HwInit[^1] |
+| 31:21 | **VF Migration Interrupt Message Number**：指示用于迁移中断的 MSI/MSI-X 向量。<br/>如果 VF Migration Capable 为 Clear，则此字段中的值未定义 | RO         |
+
+[^1]:硬件初始化。
+
+### SR-IOV Control Register (Offset 08h)
+
+| bit  | 描述                                                         | 属性     |
+| ---- | ------------------------------------------------------------ | -------- |
+| 0    | **VF Enable**：启用/禁用 VF。 默认值为 0b。                  | RW       |
+| 1    | **VF Migration Enable**：启用/禁用 VF 迁移支持。 默认值为 0b。 | RW or RO |
+| 2    | **VF Migration Interrupt Enable**：启用/禁用 VF 迁移状态更改中断。 默认值为 0b | RW       |
+| 3    | **VF MSE**：为虚拟功能启用内存空间。 默认值为 0b。           | RW       |
+| 4    | **ARI Capable Hierarchy**：<br/>PCI Express Endpoint：<br/>该位必须在设备的最低编号 PF 中为 RW，并在所有其他 PF 中硬连线到 0b。<br/>如果此位的值为 1b，则允许 Device 将 VF 定位到捕获的总线编号的功能编号 8 到 255 中。 否则，设备必须像非 ARI 设备一样定位 VF。<br/>该位不受任何 PF 或 VF 的 FLR 影响。<br/>默认值为 0b。<br/>RCiEP：<br/>不适用 - 该位必须硬连线到 0b。<br/>在 Root Complex 中，始终允许将 VF 分配给 First VF Offset 和 VF Stride 规则允许的任何功能编号（参见《PCI Express® Base Specification Revision 5.0.pdf》第 9.3.3.9 节和第 9.3.3.10 节）。 | RW or RO |
+| 5    | **VF 10-Bit Tag Requester Enable**：如果设置，所有 VF 必须为它们生成的所有非发布请求使用 10-Bit 标签。 如果清除，则 VF 不得将 10 位标记用于它们生成的非发布请求。 （参见《PCI Express® Base Specification Revision 5.0.pdf》第 9.3.3.2.3 节）。<br/>如果软件在任何 VF 具有未完成的非发布请求时更改该位的值，则结果未定义。<br/>如果 SR-IOV Capabilities 寄存器中的 VF 10-Bit Tag Requester Supported 位为 Clear，则允许将该位硬接线为 0b。<br/>默认值为 0b。 | RW or RO |
+
+### SR-IOV Status Register (Offset 0Ah)
+
+| bit  | 描述                                                         | 属性 |
+| ---- | ------------------------------------------------------------ | ---- |
+| 0    | **VF Migration Status**：表示 MR-PCIM 已发出 VF 迁移入或迁移出请求。<br/>为了确定事件的原因，软件可以扫描 VF 状态阵列。 默认值为 0b。 | RW1C |
+
+### InitialVFs (Offset 0Ch)
+
+**向 SR-PCIM 指示最初与 PF 关联的 VF 的数量**。
+
+InitialVFs 的最小值为 0。
+
+对于在Single-Root模式下运行的设备，此字段为 HwInit，并且必须包含与 TotalVFs 相同的值。
+
+对于在Multi-Root模式下运行的设备，当 VF Enable 为 Clear 时，该字段的值可能会被 MR-PCIM 更改。
+
+如果 VF Migration Enable 被设置，VF Enable 被清除然后设置，InitialVFs 的值可能会改变。 这是必要的，因为某些 VF 可能已迁移到其他 PF，并且可能不再可用于此 PF。
+
+### TotalVFs (Offset 0Eh)
+
+**TotalVFs 指示可以与 PF 关联的 VF 的最大数量**。
+
+TotalVFs 的最小值为 0。
+
+对于在Single-Root模式下运行的设备，此字段为 HwInit，并且必须包含与 InitialVFs 相同的值。
+
+对于在Multi-Root模式下运行的设备，该字段的值可能会被 MR-PCIM 更改。
+
+### NumVFs (Offset 10h)
+
+**NumVFs 控制可见的 VF 的数量**。 SR-PCIM 将 NumVFs 设置为创建 VF 过程的一部分。 在两个 NumVF 都设置为有效值并设置 VF 启用后，此 VF 数量应在 PCI Express 结构中可见。 可见 VF 具有为其保留的功能编号，但可能不存在。 如果 VF 存在，它应响应以它们为目标的 PCI Express 事务，并应遵循本规范定义的所有规则。 如果存在以下任一情况，则存在 VF：
+
+* VF Migration Capable 为Clear，并且VF 数小于或等于TotalVFs。
+* VF Migration Capable 已设置且关联的 VF 处于 Active.Available 或 Dormant.MigrateIn 状态
+  （见《PCI Express® Base Specification Revision 5.0.pdf》第 9.2.4 节）
+
+如果将NumVFs 设置为大于TotalVFS的值，则结果将不确定。
+NumVFs 只能在 VF Enable 为 Clear 时写入。 如果在设置 VF Enable 时写入 NumVFs，则结果为
+不明确的。
+
+NumVFs 的初始值不确定。
+
+### Function Dependency Link (Offset 12h)
+
+设备的编程模型可能在功能集之间具有特定于厂商的依赖性。 Function Dependency Link 字段用于描述这些依赖关系。
+
+该字段描述了 PF 之间的依赖关系。 VF 依赖关系与其关联的 PF 的依赖关系相同。
+
+如果一个 PF 独立于设备的其他 PF，则该字段应包含其自己的功能编号。
+
+如果一个 PF 依赖于设备的其他 PF，则该字段应包含同一功能依赖列表中下一个 PF 的功能编号。 函数依赖列表中的最后一个 PF 应包含函数依赖列表中第一个 PF 的函数编号。
+
+如果 PF<sub>p</sub> 和 PF<sub>q</sub> 在同一个函数依赖列表中，那么任何分配给 VF<sub>p,n</sub> 的 SI 也应该分配给 VF<sub>q,n</sub>。
+
+> 示例：见《PCI Express® Base Specification Revision 5.0.pdf》9.3.3.8 Function Dependency Link (Offset 12h)
+
+### First VF Offset (Offset 14h)
+
+First VF Offset 是一个常量，它定义了与**包含此 Capability 结构的 PF 关联的第一个 VF 的路由 ID 偏移量**。 第一个 VF 的 16 位路由 ID 是通过将此字段的内容添加到包含此字段的 PF 的路由 ID 来计算的，忽略任何进位，使用无符号的 16 位算法。
+VF 不应位于数字上小于其相关 PF 的总线编号上。
+当最低编号的 PF 的 ARI Capable Hierarchy 值改变或当这个 PF 的 NumVFs 值改变时，这个字段的值可能会改变。
+注意：如果 NumVFs 为 0，则 First VF Offset 未使用。如果 NumVFs 大于 0，则 First VF Offset 不得为零。
+
+### VF Stride (Offset 16h)
+
+VF Stride 为与包含此 Capability 结构的 PF 关联的所有 VF 定义了从一个 VF 到下一个 VF 的路由 ID 偏移量。 下一个 VF 的 16 位路由 ID 是通过将此字段的内容添加到当前 VF 的路由 ID，忽略任何进位，使用无符号 16 位算法计算的。
+当最低编号的 PF 的 ARI Capable Hierarchy 值改变或当这个 PF 的 NumVFs 值改变时，这个字段的值可能会改变。
+注意：如果 NumVFs 为 0 或 1，则 VF Stride 未使用。如果 NumVFs 大于 1，则 VF Stride 不得为零。
+
+### VF Device ID (Offset 1Ah)
+
+该字段包含应该为每个 VF 呈现给 SI 的Device ID。
+
+VF Device ID 可能与 PF Device ID 不同。 VF Device ID 必须由供应商管理。 供应商必须确保所选的 VF Device ID 不会导致使用不兼容的设备驱动程序。
+
+### Supported Page Sizes (Offset 1Ch)
+
+该字段指示 PF 支持的页面大小。 如果位 n 被设置，这个 PF 支持 2<sup>n +12</sup> 的页面大小。 例如，如果位 0 被设置，则 PF 支持 4-KB 页面大小。 PF 需要支持 4-KB、8-KB、64-KB、256-KB、1-MB 和 4-MB 页面大小。 所有其他页面大小都是可选的。
+页面大小描述了 VF BAR 资源的最小对齐要求。
+
+### System Page Size (Offset 20h)
+
+该字段定义了系统将用于映射 VF 内存地址的page大小。 软件必须将 System Page Size 的值设置为 Supported Page Sizes 字段中设置的page大小之一。 与支持的page大小一样，如果在系统page大小中设置了位 n，则与此 PF 关联的 VF 需要支持 2<sup>n+12</sup> 的page大小。 例如，如果位 1 被设置，则系统使用 8 KB 的page大小。 如果System Page Size为零，则结果未定义。 如果在 System Page Size 中设置了一位以上，则结果是不确定的。 如果在Supported Page Sizes中未设置,而在System Page Size中设置了该bit，则结果未定义。
+
+设置System Page Size时，此 PF 关联的 VF需要与System Page Size边界上的所有 BAR 资源对齐。 每个 VF BARn 或 VF BARn 对应在System Page Size边界上对齐。 定义非零地址空间的每个 VF BARn 或 VF BARn 对的大小应被调整为消耗System Page Size字节的整数倍。 在 VF 中需要page大小对齐的所有数据结构都应在System Page Size边界上对齐。
+
+写入 System Page Size 时，VF Enable 必须为零。 如果在设置VF Enable时写入System Page Size，则结果未定义。
+
+默认值为 0000 0001h（即 4 KB）。
+
+### VF BAR0 (Offset 24h), VF BAR1 (Offset 28h), VF BAR2 (Offset 2Ch), VF BAR3 (Offset 30h), VF BAR4 (Offset 34h), VF BAR5 (Offset 38h)
+
+这些字段必须定义 VF 的Base Address Registers(BAR)。 这些字段的行为与正常的 PCI BAR 相同。 它们可以通过写全 1 并读回 BAR 的内容来调整大小，符合定义 BAR 类型字段的低位。
+
+### VF Migration State Array Offset (Offset 3Ch)
+
+如果 VF Migration Capable 设置并且 TotalVFs 不为零，则该寄存器应包含一个指向VF Migration State Array的 PF BAR 相关指针。 如果VF Migration Capable清除，则该寄存器为 RO 0。
 
 # PCI中断
 
@@ -545,6 +698,8 @@ consistent_dma_mask_bits  enable           local_cpus     power_state  resource0
 
 《PCI Express_ Base Specification Revision 4.0 Version 0.3 ( PDFDrive ).pdf》
 
+《PCI Express® Base Specification Revision 5.0.pdf》
+
 [(PCIE) Peripheral Component Interconnect [Express] – Stephen Marz (utk.edu)](https://marz.utk.edu/my-courses/cosc562/pcie/)
 
 [PCIE-Capability能力集协议解释_逆风水手的博客-CSDN博客](https://blog.csdn.net/qq_21688871/article/details/130621768)
@@ -554,3 +709,8 @@ consistent_dma_mask_bits  enable           local_cpus     power_state  resource0
 [PCI Express 系列连载篇（二十四）MSI和MSI-X中断机制 I-腾讯云开发者社区-腾讯云 (tencent.com)](https://cloud.tencent.com/developer/article/1766752)
 
 《Single Root IO Virtualization and Sharing Specification Revision 1.0.pdf》
+
+[PCIe_BGONE的博客-CSDN博客](https://blog.csdn.net/bgone/category_9450900.html)
+
+[【PCIe 5.0 - 100】SR-IOV【1】_pcie sr-iov_BGONE的博客-CSDN博客](https://blog.csdn.net/BGONE/article/details/122113532) 《PCI Express® Base Specification Revision 5.0.pdf》PCIe Single Root I/O Virtualization and Sharing翻译
+
