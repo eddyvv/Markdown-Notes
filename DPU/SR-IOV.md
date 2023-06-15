@@ -4,6 +4,18 @@
 
 `SR-IOV`是通过改变物理设备硬件设计的方式来实现硬件设备的透传以及虚拟机共享的目的，同时也建立了一套基于`PF->VF`的标准，SR-IOV能够为虚拟机提供独立的内存空间、中断、DMA流来绕过[VMM](#VMM)实现数据访问。
 
+## SR-IOV的优缺点
+
+SR-IOV相对与软件模拟IO虚拟化的优点：
+
+1.降低了IO延迟和对CPU的占用，获得了接近原生的IO性能，因为虚拟机直接使用VFs，没有了VMM的陷入处理。
+
+2.数据更加安全，因为每个VF属于一个IOMMU Group，共享IOMMU Group的设备不能分配给不同的虚拟机，而每个IOMMU Group又有独立的内存。
+
+SR-IOV的缺点：
+
+使用了VFs的虚拟机不能在线迁移。
+
 # SR-IOV原理
 
 ## SR-IOV硬件实现
@@ -57,7 +69,7 @@
 
 ## 虚拟功能 (Virtual Function, VF)
 
-与物理功能关联的一种功能。VF 是一种轻量级 PCIe 功能，可以与物理功能以及与同一物理功能关联的其他 VF 共享一个或多个物理资源。VF 仅允许拥有用于其自身行为的配置资源。
+与物理功能关联的一种功能。VF 是一种轻量级 PCIe 功能，可以与物理功能以及与同一物理功能关联的其他 VF 共享一个或多个物理资源。VF 仅允许拥有用于其自身行为的配置资源，**基本上，它们只有将数据移入和移出的能力**。VF无法进行配置，因为这会改变底层PF，从而影响所有其他VF；配置只能针对PF进行。因为VF无法像完整的PCIe设备一样处理，所以操作系统或虚拟化管理程序实例必须知道它们不是完整的PCIe设备。因此，SR-IOV需要操作系统或虚拟化管理程序的支持，以便操作系统实例或虚拟化管理程序可以正确地检测和正确地初始化PF和VF。
 
 每个 SR-IOV 设备都可有一个物理功能 (Physical Function, PF)，并且每个 PF 最多可有 64,000 个与其关联的虚拟功能 (Virtual Function, VF)。PF 可以通过寄存器创建 VF，这些寄存器设计有专用于此目的的属性。
 
@@ -582,7 +594,11 @@ https://www.one-tab.com/page/BxsaLOL9S0y7W59cTFPlMw SR-IOV相关学习资料
 
 [KVM 介绍（4）：I/O 设备直接分配和 SR-IOV KVM PCI/PCIe Pass-Through SR-IOV\] - SammyLiu - 博客园 (cnblogs.com)](https://www.cnblogs.com/sammyliu/p/4548194.html)
 
+[What is SR-IOV? - Scott's Weblog - The weblog of an IT pro focusing on cloud computing, Kubernetes, Linux, containers, and networking (scottlowe.org)](https://blog.scottlowe.org/2009/12/02/what-is-sr-iov/) SR-IOV部分限制解释。
 
+[Intel SR-IOV Explanation - YouTube](https://www.youtube.com/watch?v=hRHsk8Nycdg) Intel对于SR-IOV的解释（经典）。
+
+《RichardSolomon_PCI_Express.pdf》 SR-IOV PF、VF配置空间例子。
 
 [^1]:《PCI Express® Base Specification Revision 5.0.pdf》9.3.3.14节
 

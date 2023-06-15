@@ -20,3 +20,12 @@ acpi_init
     	-->acpi_pci_link_init
 ```
 
+
+
+
+
+
+
+# 参考
+
+[PCIE枚举和资源分配 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/621287008)

@@ -67,38 +67,7 @@ obj-m 编译成模块
 obj-n 不编译
 ```
 
-# 修改内核配置菜单实现对新加入内核源码的控制
 
-1. 将源码拷贝到内核对应的文件夹下
-2. 为配置界面添加控制新加入源代码的内容
-
-​	在加入源码的目录下创建`Kconfig`文件，便添加相应控制内容
-
-3. 修改上层`Kconfig`文件，包含新加入源码的`Kconfig`文件。
-4. 修改`Makefile`文件
-5. 修改上一级目录的Makefile
-
-```bash
-make[1]: *** No rule to make target 'debian/canonical-certs.pem', needed by 'certs/x509_certificate_list'.  Stop.
-make: *** [Makefile:1868: certs] Error 2
-```
-
-解决方法[(104) how to fix the error "No rule to make target 'debian canonical certs pem', needed by 'certs x509 cer - YouTube](https://www.youtube.com/watch?v=7G3UkugVhOw)：
-
-```bash
-nano .config
-查找到debian/canonical-certs.pem和debian/canonical-revoked-certs.pem字符串删除
-```
-
-```bash
-BTF: .tmp_vmlinux.btf: pahole (pahole) is not available
-```
-
-解决方法
-
-```bash
-sudo apt install dwarves
-```
 
 # 编译安装内核
 
@@ -272,6 +241,41 @@ sudo rm -rf /lib/modules/5.10.0
 sudo update-grub
 ```
 
+### 修改内核配置菜单实现对新加入内核源码的控制
+
+1. 将源码拷贝到内核对应的文件夹下
+2. 为配置界面添加控制新加入源代码的内容
+
+	在加入源码的目录下创建`Kconfig`文件，便添加相应控制内容
+
+3. 修改上层`Kconfig`文件，包含新加入源码的`Kconfig`文件。
+4. 修改`Makefile`文件
+5. 修改上一级目录的Makefile
+
+```bash
+make[1]: *** No rule to make target 'debian/canonical-certs.pem', needed by 'certs/x509_certificate_list'.  Stop.
+make: *** [Makefile:1868: certs] Error 2
+```
+
+解决方法[(104) how to fix the error "No rule to make target 'debian canonical certs pem', needed by 'certs x509 cer - YouTube](https://www.youtube.com/watch?v=7G3UkugVhOw)：
+
+```bash
+nano .config
+查找到debian/canonical-certs.pem和debian/canonical-revoked-certs.pem字符串删除
+```
+
+```bash
+BTF: .tmp_vmlinux.btf: pahole (pahole) is not available
+```
+
+解决方法
+
+```bash
+sudo apt install dwarves
+```
+
+
+
 ## 常见问题
 
 ### 1. Module.symvers is missing
@@ -366,12 +370,6 @@ sudo make INSTALL_MOD_STRIP=1 modules_install
 CONFIG_MODULE_SIG_KEY="cert/signing_key.pem"
 ```
 
-
-
-
-
-
-
 ## 单独编译Linux内核的某一个模块
 
 找到对应的模块文件夹，找到需要编译的文件，确认编译的config文件
@@ -382,15 +380,11 @@ make CONFIG_INFINIBAND=m -C <源码> M=<模块文件夹> modules
 
 # qemu+gdb调试linux内核
 
-## 下载linux源码
-
 ## 安装qemu
 
 ```bash
 sudo apt install qemu
 ```
-
-
 
 ## 配置调试版内核
 
@@ -491,20 +485,6 @@ qemu-system-x86_64 -s -kernel /path/to/vmlinux -initrd initramfs.cpio.gz -nograp
 / ls
 bin   dev  init  proc  root  sbin  sys   usr
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 # 参考
 
