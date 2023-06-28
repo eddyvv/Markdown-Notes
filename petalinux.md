@@ -17,7 +17,7 @@ sudo chmod 777 petalinux2022 ./
 
 地址：[Downloads (xilinx.com)](https://www.xilinx.com/support/download/index.html/content/xilinx/en/downloadNav/embedded-design-tools.html)
 
-4. 更改默认shell
+4. 更改默认shell🔥
 
 ```bash
 bash

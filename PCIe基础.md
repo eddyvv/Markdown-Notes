@@ -1,6 +1,8 @@
-# PCIe基础
+# PCIe基础知识（配置空间）
 
 **PCI Express**，简称**PCI-E**，官方简称**PCIe**，是计算机总线的一个重要分支，它沿用既有的PCI编程概念及信号标准，并且构建了更加高速的串行通信系统标准。目前这一标准由[PCI-SIG](https://zh.wikipedia.org/wiki/PCI-SIG)组织制定和维护。
+
+PCIe的两个端点通过双link全双工传输，一个link负责发送，一个link负责接收，两个link组成一个Lane，一个PCIe传输链路上可以由多个Lane组成，可以支持1、2、4、8、16个Lane。
 
 ![image-20230313161217884](image/PCIe/image-20230313161217884.png)
 
@@ -10,7 +12,7 @@ PCIe采用树拓扑，其体系结构中一般由Root Complex、Switch、EndPoin
 
 **`Switch`**：PCIe适配器设备，它主要用于扩展PCIe总线。 与PCI并行总线不同，PCIe总线采用快速差分总线和端到端连接方式，因此每个PCIe链路两端只能连接一个设备。 如果需要装载更多的PCIe设备，则必须使用交换机适配器。 在linux上看不到switch。 在软件级别，可以看到交换机的上行端口(upstream port，靠近RC的一侧)和下行端口(downstream port )。
 
-**PCIe Endponit**（简称EP）：PCIe终端设备是PCIe树结构的叶节点。 例如，网卡、NVME卡和显卡都是PCIe ep设备
+**PCIe Endponit**（简称EP）：PCIe终端设备是PCIe树结构的叶节点。 例如，网卡、NVME卡和显卡都是PCIe ep设备。访问地址空间>=4G Memory，支持32bit和64bit，无法产生I/O请求。
 
 ![image-20230526145832280](image/PCIe%E5%9F%BA%E7%A1%80/image-20230526145832280.png)
 
@@ -24,9 +26,69 @@ PCIe采用树拓扑，其体系结构中一般由Root Complex、Switch、EndPoin
 
 PCI Express (PCIe) Type 0 设备的前 256 个字节分为两部分：**前 64 个字节是标准配置空间头部**（Header），用于描述设备的基本信息和功能；**后 192 个字节PCI Express Capbility结构**，用于描述设备的扩展能力和配置。
 
-在 PCI Express (PCIe) 中，设备被分为两种类型：Type 0 设备和 Type 1 设备。Type 0 设备和 Type 1 设备的区别在于它们的配置空间结构不同。
+![image-20230619093854294](image/PCIe%E5%9F%BA%E7%A1%80/image-20230619093854294.png)
+
+> 《PCI Express_ Base Specification Revision 4.0 Version 0.3 ( PDFDrive ).pdf》p567
+
+## 访问方式
+
+### I/O访问
+
+PCIe定义了两个IO端口寄存器用来访问设备的配置空间。
+
+* CONFIG_ADDRESS(0xCF8)：地址寄存器；
+
+![image-20230619094721496](image/PCIe%E5%9F%BA%E7%A1%80/image-20230619094721496.png)
+
+* CONFIG_DATA(0xCFC)：数据寄存器。
+
+写入数据到配置空间：
+
+* 地址寄存器写入BDF和Register；
+* 数据寄存器写入数据，完成写入数据到配置空间。
+
+从配置空间读取数据：
+
+* 地址寄存器写入BDF号和Register；
+* 从数据寄存器读取数据，完成读取。
+
+Linux下查看IO端口地址：
+
+```bash
+grep conf /proc/ioports
+```
+
+### MMIO访问
+
+IO端口访问的之能够访问256（2^6）字节的配置空间，PCIe的配置空间扩展至4K，IO端口的方法无法访问到扩展配置空间，所以定义了一段MMIO空间用来方位配置空间，大小为256M（256*256*4096）。
+
+内核中可使用以下方法查看空间地址范围
+
+```bash
+grep MMCONFIG -i /proc/iomem
+```
+
+读写方式：直接进行地址读写即可。
+
+读写配置空间：
+
+读取：
+
+```bash
+lspci -xxxs <bdf number>
+```
+
+读取和写入：
+
+```bash
+setpci --dumpregs #读取
+setpci -s <bdf number> VENDOR_ID #读取vendor ID
+setpci -s <bdf number> COMMAND=0x0140 #写入
+```
 
 ## 设备分类
+
+在 PCI Express (PCIe) 中，设备被分为两种类型：Type 0 设备和 Type 1 设备。Type 0 设备和 Type 1 设备的区别在于它们的配置空间结构不同。
 
 ### Type 0
 
@@ -229,7 +291,7 @@ lspci -vvvxxxx -s <id>
 
 > 《PCI Code and ID Assignment Specification Revision 1.11》2. Capability IDs p22
 
-Linux内核中对Capility IDs的定义：
+### Linux内核中对Capility IDs的定义
 
 `/include/uapi/linux/pci_regs.h`
 
@@ -262,7 +324,6 @@ Linux内核中对Capility IDs的定义：
 #define PCI_CAP_LIST_NEXT	1	/* Next capability in the list */
 #define PCI_CAP_FLAGS		2	/* Capability defined flags (16 bits) */
 #define PCI_CAP_SIZEOF		4
-
 ```
 
 ## PCIe Extended Capabilities List
@@ -322,6 +383,47 @@ Linux内核中对Capility IDs的定义：
 
 > 《PCI Code and ID Assignment Specification Revision 1.11.pdf》3. Extended Capability IDs p24
 
+### Linux内核中对Extended Capility IDs的定义
+
+`/include/uapi/linux/pci_regs.h`
+
+```c
+#define PCI_EXT_CAP_ID_ERR	0x01	/* Advanced Error Reporting */
+#define PCI_EXT_CAP_ID_VC	0x02	/* Virtual Channel Capability */
+#define PCI_EXT_CAP_ID_DSN	0x03	/* Device Serial Number */
+#define PCI_EXT_CAP_ID_PWR	0x04	/* Power Budgeting */
+#define PCI_EXT_CAP_ID_RCLD	0x05	/* Root Complex Link Declaration */
+#define PCI_EXT_CAP_ID_RCILC	0x06	/* Root Complex Internal Link Control */
+#define PCI_EXT_CAP_ID_RCEC	0x07	/* Root Complex Event Collector */
+#define PCI_EXT_CAP_ID_MFVC	0x08	/* Multi-Function VC Capability */
+#define PCI_EXT_CAP_ID_VC9	0x09	/* same as _VC */
+#define PCI_EXT_CAP_ID_RCRB	0x0A	/* Root Complex RB? */
+#define PCI_EXT_CAP_ID_VNDR	0x0B	/* Vendor-Specific */
+#define PCI_EXT_CAP_ID_CAC	0x0C	/* Config Access - obsolete */
+#define PCI_EXT_CAP_ID_ACS	0x0D	/* Access Control Services */
+#define PCI_EXT_CAP_ID_ARI	0x0E	/* Alternate Routing ID */
+#define PCI_EXT_CAP_ID_ATS	0x0F	/* Address Translation Services */
+#define PCI_EXT_CAP_ID_SRIOV	0x10	/* Single Root I/O Virtualization */
+#define PCI_EXT_CAP_ID_MRIOV	0x11	/* Multi Root I/O Virtualization */
+#define PCI_EXT_CAP_ID_MCAST	0x12	/* Multicast */
+#define PCI_EXT_CAP_ID_PRI	0x13	/* Page Request Interface */
+#define PCI_EXT_CAP_ID_AMD_XXX	0x14	/* Reserved for AMD */
+#define PCI_EXT_CAP_ID_REBAR	0x15	/* Resizable BAR */
+#define PCI_EXT_CAP_ID_DPA	0x16	/* Dynamic Power Allocation */
+#define PCI_EXT_CAP_ID_TPH	0x17	/* TPH Requester */
+#define PCI_EXT_CAP_ID_LTR	0x18	/* Latency Tolerance Reporting */
+#define PCI_EXT_CAP_ID_SECPCI	0x19	/* Secondary PCIe Capability */
+#define PCI_EXT_CAP_ID_PMUX	0x1A	/* Protocol Multiplexing */
+#define PCI_EXT_CAP_ID_PASID	0x1B	/* Process Address Space ID */
+#define PCI_EXT_CAP_ID_DPC	0x1D	/* Downstream Port Containment */
+#define PCI_EXT_CAP_ID_L1SS	0x1E	/* L1 PM Substates */
+#define PCI_EXT_CAP_ID_PTM	0x1F	/* Precision Time Measurement */
+#define PCI_EXT_CAP_ID_DVSEC	0x23	/* Designated Vendor-Specific */
+#define PCI_EXT_CAP_ID_DLF	0x25	/* Data Link Feature */
+#define PCI_EXT_CAP_ID_PL_16GT	0x26	/* Physical Layer 16.0 GT/s */
+#define PCI_EXT_CAP_ID_MAX	PCI_EXT_CAP_ID_PL_16GT
+```
+
 # 扩展配置空间（0x100h~0x3FFh）<a name="ExtenCapabilites"/>
 
 **扩展配置空间则是用来描述设备的扩展能力和配置的**。PCIe 设备可以实现许多扩展功能，例如 MSI (Message Signaled Interrupt)、MSI-X (Message Signaled Interrupts eXtended)、SR-IOV (Single Root I/O Virtualization)、AER (Advanced Error Reporting)、L1 Substate Power Management等等，这些能力需要使用扩展配置空间进行描述和配置。扩展配置空间的地址范围为 0x100 到 0x3FF，长度为 256 个字节。扩展配置空间中的每个字节都可以被读取和写入，用于描述设备的各种扩展能力和配置。PCIe 规范定义了许多不同的扩展能力结构体，如 PCIe Capability、MSI Capability、MSI-X Capability、SR-IOV Capability 等等，这些结构体包含了各种字段和寄存器，用于描述设备的扩展能力和配置。
@@ -342,6 +444,10 @@ Linux内核中对Capility IDs的定义：
 > 《PCI Express Technology 3.0.pdf》Extended Configuration Space p90
 
 例子：[PCIE-Capability能力集协议解释_逆风水手的博客-CSDN博客](https://blog.csdn.net/qq_21688871/article/details/130621768)
+
+![image-20230619140653536](image/PCIe%E5%9F%BA%E7%A1%80/image-20230619140653536.png)
+
+> 《PCI Express_ Base Specification Revision 4.0 Version 0.3 ( PDFDrive ) .pdf》 7.8. PCI Express Capability Structure p595
 
 ## MSI Capability结构
 
@@ -420,6 +526,14 @@ PCIE的MSI-X相关信息存在两个地方，一个是PCIE Capability中，存�
 | 15:0  | **PCI Express Extended Capability ID**：该字段是 PCI-SIG 定义的 ID 号，指示扩展功能的性质和格式。<br/>SR-IOV 扩展能力的扩展能力 ID 是 0010h。 | RO   |
 | 19:16 | **Capability Version**：该字段是一个 PCI-SIG 定义的版本号，它指示存在的 Capability 结构的版本。<br/>对于此版本的规范，必须为 1h。 | RO   |
 | 31:20 | **Next Capability Offset**：该字段包含到下一个 PCI Express Capability 结构的偏移量，如果 Capabilities 的链表中不存在其他项，则为 000h。<br/>对于在配置空间中实现的扩展功能，此偏移量是相对于 PCI 兼容配置空间的开头的，因此必须始终为 000h（用于终止功能列表）或大于 0FFh。 | RO   |
+
+再Linux内核中获取下一个`PCIe Extended Capability`的宏为
+
+`include/uapi/linux/pci_regs.h#L698`
+
+```c
+#define PCI_EXT_CAP_NEXT(header)	((header >> 20) & 0xffc)
+```
 
 ### SR-IOV Capabilities Register (Offset 04h)
 
@@ -545,33 +659,120 @@ VF Device ID 可能与 PF Device ID 不同。 VF Device ID 必须由供应商管
 
 如果 VF Migration Capable 设置并且 TotalVFs 不为零，则该寄存器应包含一个指向VF Migration State Array的 PF BAR 相关指针。 如果VF Migration Capable清除，则该寄存器为 RO 0。
 
-# PCI中断
+#### Linux内核SR-IOV Capability结构体
 
-## INTx中断
+`/drivers/pci/pci.h`
 
-![image-20230529084848546](image/PCIe%E5%9F%BA%E7%A1%80/image-20230529084848546.png)
+```c
 
-> 《PCI Express Technology 3.0.pdf》17 Interrupt Support p803
+/* Single Root I/O Virtualization */
+struct pci_sriov {
+	int		pos;		/* Capability position */
+	int		nres;		/* Number of resources */
+	u32		cap;		/* SR-IOV Capabilities */
+	u16		ctrl;		/* SR-IOV Control */
+	u16		total_VFs;	/* Total VFs associated with the PF */
+	u16		initial_VFs;	/* Initial VFs associated with the PF */
+	u16		num_VFs;	/* Number of VFs available */
+	u16		offset;		/* First VF Routing ID offset */
+	u16		stride;		/* Following VF stride */
+	u16		vf_device;	/* VF device ID */
+	u32		pgsz;		/* Page size for BAR alignment */
+	u8		link;		/* Function Dependency Link */
+	u8		max_VF_buses;	/* Max buses consumed by VFs */
+	u16		driver_max_VFs;	/* Max num VFs driver supports */
+	struct pci_dev	*dev;		/* Lowest numbered PF */
+	struct pci_dev	*self;		/* This PF */
+	u32		class;		/* VF device */
+	u8		hdr_type;	/* VF header type */
+	u16		subsystem_vendor; /* VF subsystem vendor */
+	u16		subsystem_device; /* VF subsystem device */
+	resource_size_t	barsz[PCI_SRIOV_NUM_BARS];	/* VF BAR size */
+	bool		drivers_autoprobe; /* Auto probing of VFs by driver */
+};
 
-![image.png](image/PCIe%E5%9F%BA%E7%A1%80/1000019445-6366943279216546732835967.png)
-
-> 《PCI Express Technology 3.0.pdf》17 Interrupt Support p801
-
-![image-20230414135118596](image/PCIe%E5%9F%BA%E7%A1%80/image-20230414135118596.png)
+```
 
 
 
-## MSI中断
+## 内核获取扩展结构
+
+```c
+/**
+ * pci_find_ext_capability - Find an extended capability
+ * @dev: PCI device to query
+ * @cap: capability code
+ *
+ * Returns the address of the requested extended capability structure
+ * within the device's PCI configuration space or 0 if the device does
+ * not support it.  Possible values for @cap include:
+ *
+ *  %PCI_EXT_CAP_ID_ERR		Advanced Error Reporting
+ *  %PCI_EXT_CAP_ID_VC		Virtual Channel
+ *  %PCI_EXT_CAP_ID_DSN		Device Serial Number
+ *  %PCI_EXT_CAP_ID_PWR		Power Budgeting
+ */
+u16 pci_find_ext_capability(struct pci_dev *dev, int cap)
+{
+	return pci_find_next_ext_capability(dev, 0, cap);
+}
+EXPORT_SYMBOL_GPL(pci_find_ext_capability);
 
 
+/**
+ * pci_find_next_ext_capability - Find an extended capability
+ * @dev: PCI device to query
+ * @start: address at which to start looking (0 to start at beginning of list)
+ * @cap: capability code
+ *
+ * Returns the address of the next matching extended capability structure
+ * within the device's PCI configuration space or 0 if the device does
+ * not support it.  Some capabilities can occur several times, e.g., the
+ * vendor-specific capability, and this provides a way to find them all.
+ */
+u16 pci_find_next_ext_capability(struct pci_dev *dev, u16 start, int cap)
+{
+	u32 header;
+	int ttl;
+	u16 pos = PCI_CFG_SPACE_SIZE;
 
+	/* minimum 8 bytes per capability */
+	ttl = (PCI_CFG_SPACE_EXP_SIZE - PCI_CFG_SPACE_SIZE) / 8;
 
+	if (dev->cfg_size <= PCI_CFG_SPACE_SIZE)
+		return 0;
 
-## MSI-X中断
+	if (start)
+		pos = start;
 
+	if (pci_read_config_dword(dev, pos, &header) != PCIBIOS_SUCCESSFUL)
+		return 0;
 
+	/*
+	 * If we have no capabilities, this is indicated by cap ID,
+	 * cap version and next pointer all being 0.
+	 */
+	if (header == 0)
+		return 0;
 
+	while (ttl-- > 0) {
+		if (PCI_EXT_CAP_ID(header) == cap && pos != start)
+			return pos;
 
+        /* 读取指向下一个扩展结构的指针 */
+		pos = PCI_EXT_CAP_NEXT(header);
+		if (pos < PCI_CFG_SPACE_SIZE)
+			break;
+
+		if (pci_read_config_dword(dev, pos, &header) != PCIBIOS_SUCCESSFUL)
+			break;
+	}
+
+	return 0;
+}
+EXPORT_SYMBOL_GPL(pci_find_next_ext_capability);
+
+```
 
 
 
@@ -670,6 +871,38 @@ consistent_dma_mask_bits  enable           local_cpus     power_state  resource0
 
 上述资源信息每三个表示一个元组，其中第一个表示资源的起始地址（物理地址），第二个表示资源的结束地址，第三个表示资源的标志属性。
 
+# 查看Linux下的PCIe设备
+
+## 查看所有设备
+
+```bash
+lspci
+```
+
+显示的信息中，`+`表示1（Enable）`-`表示0（Disable）
+
+## 查看树形结
+
+```bash
+lspci -tv | less
+```
+
+## 查看特定设备
+
+```bash
+lspci -s <bbf number> -vvv
+```
+
+## 查看配置空间
+
+```bash
+lspci -s <bdf number> -xxx
+```
+
+
+
+
+
 # 参考
 
 [PCI Express - 维基百科，自由的百科全书 (wikipedia.org)](https://zh.wikipedia.org/wiki/PCI_Express)
@@ -714,7 +947,7 @@ consistent_dma_mask_bits  enable           local_cpus     power_state  resource0
 
 《Single Root IO Virtualization and Sharing Specification Revision 1.0.pdf》
 
-[PCIe_BGONE的博客-CSDN博客](https://blog.csdn.net/bgone/category_9450900.html)
+[PCIe_BGONE的博客-CSDN博客](https://blog.csdn.net/bgone/category_9450900.html) PCIe相关文章。
 
 [【PCIe 5.0 - 100】SR-IOV【1】_pcie sr-iov_BGONE的博客-CSDN博客](https://blog.csdn.net/BGONE/article/details/122113532) 《PCI Express® Base Specification Revision 5.0.pdf》PCIe Single Root I/O Virtualization and Sharing翻译
 

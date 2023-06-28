@@ -1,0 +1,30 @@
+# PCI中断
+
+## INTx中断
+
+![image-20230529084848546](image/PCIe%E4%B8%AD%E6%96%AD%EF%BC%88MSI%E3%80%81MSI-X%E3%80%81INTx%EF%BC%89/image-20230529084848546.png)
+
+> 《PCI Express Technology 3.0.pdf》17 Interrupt Support p803
+
+![image.png](image/PCIe%E4%B8%AD%E6%96%AD%EF%BC%88MSI%E3%80%81MSI-X%E3%80%81INTx%EF%BC%89/1000019445-6366943279216546732835967.png)
+
+> 《PCI Express Technology 3.0.pdf》17 Interrupt Support p801
+
+![image-20230414135118596](image/PCIe%E4%B8%AD%E6%96%AD%EF%BC%88MSI%E3%80%81MSI-X%E3%80%81INTx%EF%BC%89/image-20230414135118596.png)
+
+
+
+## MSI中断
+
+
+
+
+
+## MSI-X中断
+
+
+
+
+
+
+

@@ -10,3 +10,9 @@ shutdown -s -t <sec>
 shutdown -a
 ```
 
+# 关闭WSL子系统
+
+```bash
+wsl --shutdown
+```
+

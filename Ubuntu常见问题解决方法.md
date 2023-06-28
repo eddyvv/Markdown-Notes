@@ -49,7 +49,7 @@ sudo cpufreq-set -g performance
 cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq
 ```
 
-## Ubuntu-Server安装界面
+## Ubuntu-Server安装图形界面
 
 ```bash
 sudo apt install lightdm
@@ -174,5 +174,31 @@ sudo modprobe rdma_ucm
 
 ```bash
 printenv
+```
+
+# Ubuntu设置默认启动内核
+
+以启动第四内核为例：
+
+```bash
+sudo vim /etc/default/grub
+```
+
+修改`/etc/default/grub`文件的`GRUB_DEFAULT`的值为`"1>4"`，注意此处需要双引号，且等号前后不能有空格。
+
+![image-20230628142218366](image/Ubuntu%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95/image-20230628142218366.png)
+
+其中的`1`表示菜单的选项1（菜单从0开始）
+
+![image-20230515104210488](image/Ubuntu%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95/image-20230515104210488.png)
+
+`4`表示二级菜单的选中的待默认启动的内核版本。
+
+![image-20230517111217516](image/Ubuntu%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95/image-20230517111217516.png)
+
+更改完成之后执行
+
+```bash
+sudo update-grub
 ```
 

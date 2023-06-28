@@ -130,7 +130,7 @@ make -j$(nproc) modules
 
 ## 安装
 
-1. 首先安装模块
+### 首先安装模块
 
 这里加上`INSTALL_MOD_STRIP=1`是为了避免内核启动时卡在 [loading initial ramdisk](#ramdisk)
 
@@ -138,20 +138,20 @@ make -j$(nproc) modules
 sudo make INSTALL_MOD_STRIP=1 modules_install
 ```
 
-2. 安装内核
+### 安装内核
 
 ```bash
 make bzImage
 sudo make install
 ```
 
-3. 更改引导
+### 更改引导
 
 ```bash
 sudo update-initramfs -c -k 5.10.0
 ```
 
-4. 更改`grub`
+### 更改`grub`
 
 修改文件
 
@@ -170,7 +170,7 @@ GRUB_TIMEOUT=10
 sudo update-grub
 ```
 
-5. 重启
+### 重启
 
 ```bash
 reboot
