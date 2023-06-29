@@ -158,6 +158,14 @@ git stash pop
 git push --force origin HEAD^:master
 ```
 
+查看最近几次的提交记录
+
+```bash
+git log -p -2
+```
+
+`-2`可修改数字，查看最近几次的提交记录。
+
 ## .gitignore
 
 ### .gitignore 文件的格式规范如下：
@@ -219,3 +227,36 @@ git push
 ```
 
 若需要删除远程，同时删除本地，去掉命令里的`-r`即可。
+
+## 统计代码行数
+
+统计当前项目代码行数 
+
+```bash
+git ls-files | xargs cat | wc -l
+```
+
+细分每个文件的代码行数，相当于把上面命令细化
+
+```bash
+git ls-files | xargs wc -l
+```
+
+仓库提交者排名前 5（如果看全部，去掉 head 管道即可）
+
+```bash
+git log --pretty=’%aN’ | sort | uniq -c | sort -k1 -n -r | head -n 5
+```
+
+统计代码提交的人数，也称：统计仓库提交贡献者
+
+```bash
+git log --pretty=’%aN’ | sort -u | wc -l
+```
+
+统计总提交次数
+
+```bash
+git log --oneline | wc -l
+```
+

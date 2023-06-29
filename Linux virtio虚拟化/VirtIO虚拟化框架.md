@@ -6,7 +6,7 @@
 
 `virtio` 是对半虚拟化 `hypervisor` 中的一组通用模拟设备的抽象。该设置还允许 `hypervisor` 导出一组通用的模拟设备，并通过一个通用的应用编程接口（API）让它们变得可用。下图展示了为什么这很重要。有了半虚拟化 `hypervisor` 之后，来宾操作系统能够实现一组通用的接口，在一组后端驱动程序之后采用特定的设备模拟。后端驱动程序不需要是通用的，因为它们只实现前端所需的行为。
 
-![image-20221209141129715](image/virtio%E8%99%9A%E6%8B%9F%E5%8C%96%E6%A1%86%E6%9E%B6/image-20221209141129715.png)
+![image-20221209141129715](image/VirtIO%E8%99%9A%E6%8B%9F%E5%8C%96%E6%A1%86%E6%9E%B6/image-20221209141129715.png)
 
 除了前端驱动程序（在来宾操作系统中实现）和后端驱动程序（在 `hypervisor` 中实现）之外，`virtio` 还定义了两个层来支持来宾操作系统到 `hypervisor` 的通信。在顶级（称为 virtio）的是虚拟队列接口，它在概念上将前端驱动程序附加到后端驱动程序。驱动程序可以使用 0 个或多个队列，具体数量取决于需求。例如，`virtio` 网络驱动程序使用两个虚拟队列（一个用于接收，另一个用于发送），而 `virtio` 块驱动程序仅使用一个虚拟队列。虚拟队列实际上被实现为跨越来宾操作系统和 `hypervisor` 的衔接点。但这可以通过任意方式实现，前提是来宾操作系统和 `hypervisor` 以相同的方式实现它。
 
@@ -60,7 +60,7 @@ MODULE_DEVICE_TABLE(pci, virtio_pci_id_table);
 #define PCI_VENDOR_ID_REDHAT_QUMRANET    0x1af4
 ```
 
-![img](image/virtio%E8%99%9A%E6%8B%9F%E5%8C%96%E6%A1%86%E6%9E%B6/virtio-architecture.jpeg)
+![img](image/VirtIO%E8%99%9A%E6%8B%9F%E5%8C%96%E6%A1%86%E6%9E%B6/virtio-architecture.jpeg)
 
 
 
@@ -107,13 +107,13 @@ virtio 前端驱动相关源码：
  |   |
  |   ├─ scsi
  |   |   └─ virtio_scsi.c
- |   |   
+ |   |
  |   └─ virtio
  |       ├─ virtio_balloon.c
  |       ├─ virtio_mmio.c
  |       ├─ virtio_pci.c
  |       ├─ virtio_ring.c
- |       └─ virtio.c 
+ |       └─ virtio.c
  |
  ├─ include
  |   ├─ linux
@@ -135,7 +135,7 @@ virtio 前端驱动相关源码：
  |           ├─ virtio_console.h
  |           ├─ virtio_ids.h
  |           ├─ virtio_net.h
- |           ├─ virtio_pci.h    
+ |           ├─ virtio_pci.h
  |           ├─ virtio_ring.h
  |           └─ virtio_rng.h
  |
