@@ -370,6 +370,26 @@ sudo make INSTALL_MOD_STRIP=1 modules_install
 CONFIG_MODULE_SIG_KEY="cert/signing_key.pem"
 ```
 
+### 7. zstd: not found
+
+```bash
+ZSTD22  arch/x86/boot/compressed/vmlinux.bin.zst 
+/bin/sh: 1: zstd: not found 
+make[2]: *** [arch/x86/boot/compressed/Makefile:134：arch/x86/boot/compressed/vmlinux.bin.zst] 错误 127 
+make[2]: *** 正在删除文件“arch/x86/boot/compressed/vmlinux.bin.zst” make[1]: *** [arch/x86/boot/Makefile:115：arch/x86/boot/compressed/vmlinux] 错误 2
+```
+
+解决方法
+
+在配置内核时更改`Kernel compression mode`为`LZMA`
+
+```bash
+General setup  ---> 
+	Kernel compression mode (LZMA)  ---> 
+```
+
+保存后重新编译安装即可。
+
 ## 单独编译Linux内核的某一个模块
 
 找到对应的模块文件夹，找到需要编译的文件，确认编译的config文件
@@ -512,3 +532,4 @@ bin   dev  init  proc  root  sbin  sys   usr
 
 [中文翻译 — The Linux Kernel documentation](https://www.kernel.org/doc/html/latest/translations/zh_CN/index.html) Linux内核中文文档
 
+[[arch/x86/boot/compressed/vmlinux.bin.lzma] Error 1_sustwct的博客-CSDN博客](https://blog.csdn.net/sustwct/article/details/7109251)
