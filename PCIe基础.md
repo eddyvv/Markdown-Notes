@@ -241,7 +241,7 @@ PCI-X 和PCIe 总线规范要求其设备必须支持Capabilities 结构。在PC
 
 ### 寻址过程
 
-1. 查询是否支持Capability，查看标准配置空间的0x06h（tatus Register）的bit4。
+1. 查询是否支持Capability，查看标准配置空间的0x06h（Status Register）的bit4。
 
 2. 若支持，标准配置头空间的0x34h（Capabilities Pointer）寄存器存放的值为存放第一个Capability结构的指针，根据指针查找到第一个Capability结构。
 3. 每个Capability包括第一个`8bit的ID域`、第二个`8bit的指针`以及其他一些寄存器来执行相关Capabilites，ID由 PCI SIG分配，指针指向下一个Capability的位置（当其值为0x00h时表示链表结束）。
