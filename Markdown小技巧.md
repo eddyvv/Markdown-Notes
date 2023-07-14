@@ -126,3 +126,11 @@ H<sub>2</sub>O
 
 x<sup>2</sup>+y<sup>2</sup>
 
+# <span id="jump">文章内跳转</span>
+
+1. 定义一个锚点 ` <span id="jump">跳转到的地方</span>`
+2. 跳转语法 ` [点击跳转`](#jump)
+
+示例：
+
+跳转至[文章内跳转](#jump)

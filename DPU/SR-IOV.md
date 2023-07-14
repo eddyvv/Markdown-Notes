@@ -604,5 +604,7 @@ https://www.one-tab.com/page/BxsaLOL9S0y7W59cTFPlMw SR-IOV相关学习资料
 
 《RichardSolomon_PCI_Express.pdf》 SR-IOV PF、VF配置空间例子。
 
+[SR-IOV 虚拟化](https://www.wenwoha.com/blog_detail-675.html) 虚拟机使用网卡
+
 [^1]:《PCI Express® Base Specification Revision 5.0.pdf》9.3.3.14节
 
