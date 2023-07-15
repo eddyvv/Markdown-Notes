@@ -1,57 +1,49 @@
-## <a name="index"/>目录
-* [git相关操作](#title) 
-    * [git本地库推送到远程](#git)
-    * [配置GitHub账户](#global)
-    * [删除git本地缓存](#delete)
-    * [提交暂存区到仓库](#commit)
-    * [显示变更信息](#status)
-
-## <a name="title"/>git相关操作
-### <a name="global">配置GitHub账户
+## git相关操作
+### 配置GitHub账户
 
 ```bash
 git config --global user.name "用户名"
 git config --global user.email "邮箱地址"
 ```
-### <a name="git"/>git本地库推送到远程
+### git本地库推送到远程
 
 ```git
-    git init -- 新建一个本地仓库
-    在远程创建一个仓库
-    git remote add origin 远程仓库地址例如  git remote add origin https://github.com/eddyfile/DataStructure.git
-    git pull origin master:master  //从远程分支拉取master分支并与本地master分支合并。
-    git add .
-    git commit -m "提交信息"
-    git push
+git init -- 新建一个本地仓库
+在远程创建一个仓库
+git remote add origin 远程仓库地址例如  git remote add origin https://github.com/eddyfile/DataStructure.git
+git pull origin master:master  //从远程分支拉取master分支并与本地master分支合并。
+git add .
+git commit -m "提交信息"
+git push
 ```
-### 删除git本地缓存<a name="delete"/>
+### 删除git本地缓存
 
 ```git
-    git rm -r --cached .
+git rm -r --cached .
 ```
-### 提交暂存区到仓库<a name="commit"/>
+### 提交暂存区到仓库
 
 ```git
-    git commit -m [说明]
+git commit -m [说明]
 ```
-### 显示变更信息<a name="status"/>
+### 显示变更信息
 
 ```
-    git status
+git status
 ```
 ### git push提交成功后撤销回退
 
 ```
-    git reflog //查看版本更新情况
-    git reset --hard [版本号]
-    git push --force //推送至远程
+git reflog //查看版本更新情况
+git reset --hard [版本号]
+git push --force //推送至远程
 ```
 
 ### 撤销操作
 
 在提交完之后发现漏掉文件或者信息填写错误，可使用<font color = red> --amend </font>
 ```c
-    git commit --amend
+git commit --amend
 ```
 
 ### 撤销上一次`commit`
@@ -166,6 +158,26 @@ git log -p -2
 
 `-2`可修改数字，查看最近几次的提交记录。
 
+### 代理配置
+
+#### 设置代理
+
+设置代理，根据自己端口号设置。
+
+```bash
+git config --global http.proxy http://127.0.0.1:1080
+git config --global https.proxy http://127.0.0.1:1080
+```
+
+#### <span id="取消代理">取消代理</span>
+
+```bash
+git config --global --unset http.proxy
+git config --global --unset https.proxy
+```
+
+
+
 ## .gitignore
 
 ### .gitignore 文件的格式规范如下：
@@ -189,12 +201,12 @@ git log -p -2
 ```
 build/
 #过滤整个build文件夹
-*.zip               
+*.zip
 #过滤所有.zip文件
-/build/do.c        
+/build/do.c
 #过滤/mtk/do.c文件
 
-fd1/*　　　   
+fd1/*　　　
 #忽略目录 fd1 下的全部内容
 
 /fd1/*　　　　
@@ -204,7 +216,7 @@ config.ini
 #不需要提交config,ini文件
 
 !/fw/bin/
-!/fw/sf/             
+!/fw/sf/
 #不忽略 根目录下的 /fw/bin/ 和 /fw/sf/ 目录；
 ```
 
@@ -230,7 +242,7 @@ git push
 
 ## 统计代码行数
 
-统计当前项目代码行数 
+统计当前项目代码行数
 
 ```bash
 git ls-files | xargs cat | wc -l
@@ -260,3 +272,6 @@ git log --pretty=’%aN’ | sort -u | wc -l
 git log --oneline | wc -l
 ```
 
+## Failed to connect to github.com port 443:connection timed out
+
+解决办法[取消代理](#取消代理)
