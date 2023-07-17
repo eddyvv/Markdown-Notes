@@ -1,4 +1,4 @@
-# RDMA
+# RDMA基础知识
 
 ---
 
@@ -14,11 +14,11 @@
 
 &emsp;&emsp;传统的TCP/IP网络通信，数据需要通过用户空间发送到远程机器的用户空间，在这个过程中需要经历若干次内存拷贝。
 
-![img](image/RDMA/2021-03-15_traditional-vs-rdma.png)
+![img](image/RDMA基础知识/2021-03-15_traditional-vs-rdma.png)
 
 <center>传统网络通信与RDMA网络通信</center>
 
-![4c59b7ee-8eba-40d9-a3df-5ae63608114a](image/RDMA/4c59b7ee-8eba-40d9-a3df-5ae63608114a.jpg)
+![4c59b7ee-8eba-40d9-a3df-5ae63608114a](image/RDMA基础知识/4c59b7ee-8eba-40d9-a3df-5ae63608114a.jpg)
 
 <center>RDMA数据传输</center>
 
@@ -32,7 +32,7 @@
 
 &emsp;&emsp;RDMA的三个特性：Low-Latency（低延迟）、Low CPU overhead（低CPU消耗）、high banddwidth（高带宽）
 
-![1667203778990](image/RDMA/1667203778990.png)
+![1667203778990](image/RDMA基础知识/1667203778990.png)
 
 <center>RDMA整体框架架构图</center>
 
@@ -44,7 +44,7 @@
 * **<font color=red>Kernel Bypass（内核旁路）</font>**：RDMA提供一个专有的Verbs interface而不是传统的TCP/IP Socket interface。应用程序可以直接在用户态执行数据传输，不需要在内核态与用户态之间做上下文切换。
 * **<font color=red>Zero Copy（零拷贝）</font>**：每个应用程序都能直接访问集群中的设备的虚拟内存，这意味着应用程序能够直接执行数据传输，在不涉及到网络软件栈的情况下，数据能够被直接发送到缓冲区或者能够直接从缓冲区里接收，而不需要被复制到网络层。
 
-![img](image/RDMA/v2-a2091c7131fb62a52aa4a8e216bf6345_720w.webp)
+![img](image/RDMA基础知识/v2-a2091c7131fb62a52aa4a8e216bf6345_720w.webp)
 
 <center>零拷贝与内核旁路</center>
 
@@ -55,11 +55,11 @@
 3. 在网络上传输的RDMA信息包含目标机器虚拟地址、内存钥匙和数据本身。请求完成既可以完全在用户空间中处理，也可以在应用一直睡眠到请求完成时的情况下通过内核处理。RDMA操作使应用可以从一个远程应用的内存中读取数据或向这个内存写入数据。
 4. 目标NIC确认内存钥匙，直接将数据写入应用缓存中，用于操作远程虚拟内存地址包含在RDMA信息中。
 
-![RDMA-Transmission](image/RDMA/RDMA-Transmission.png)
+![RDMA-Transmission](image/RDMA基础知识/RDMA-Transmission.png)
 
 <center>RDMA 数据传输</center>
 
-![image-20221101091253048](image/RDMA/image-20221101091253048.png)
+![image-20221101091253048](image/RDMA基础知识/image-20221101091253048.png)
 
 <center>RDMA传输过程</center>
 
@@ -69,7 +69,7 @@
 * **iWARP**：Internet Wide Area RDMA Protocal，基于TCP/IP协议的RDMA技术，由IETF标准定义。iWARP支持在标准以太网基础设施上使用RDMA技术，而<font color=red>不需要交换机支持无损以太网传输</font>，但服务器需要使用支持iWARP的网卡。与此同时，收TCP影响，性能稍差。
 * **RoCE**：RDMA over Converged Ethernet，基于以太网的RDMA技术，也是由IBTA提出。RoCE支持在标准以太网基础设施上使用RDMA技术，但是<font color=red>需要交换机支持无损以太网传输</font>，需要服务器使用RoCE网卡，性能与IB相当。
 
-![image-20221101093812423](image/RDMA/image-20221101093812423.png)
+![image-20221101093812423](image/RDMA基础知识/image-20221101093812423.png)
 
 <center>RDMA三种硬件实现</center>
 
@@ -77,7 +77,7 @@
 
 &emsp;&emsp;InfiniBand是一种基于InfiniBand架构的RDMA技术，它提供了一种基于通道的点对点消息队列转发模型，每个应用都可通过创建的虚拟通道直接获取本应用的数据消息，无需其他操作系统及协议栈的介入。InfiniBand架构的应用层采用RDMA技术，可以提供远程节点RDMA读写访问，完全卸载CPU工作负载；网络传输采用高带宽的传输；链路层设置特定的重传机制保证服务质量，不需要数据缓冲。
 
-![InfiniBand Architecture](image/RDMA/InfiniBand%20Architecture.jpg)
+![InfiniBand Architecture](image/RDMA基础知识/InfiniBand%20Architecture.jpg)
 
 &emsp;&emsp;**<font color=red>InfiniBand必须运行在InfiniBand网络环境下，必须使用IB交换机及IB网卡才可以实现。</font>**
 
@@ -98,7 +98,7 @@ InfiniBand技术特点：
 
 &emsp;&emsp;iWARP协议一共有三层，所以更准确说iWARP是一组协议的统称，如下图绿色部分所示，[IETF](https://zh.m.wikipedia.org/zh-hans/%E4%BA%92%E8%81%94%E7%BD%91%E5%B7%A5%E7%A8%8B%E4%BB%BB%E5%8A%A1%E7%BB%84)（互联网工程任务组）也将这三层称为RDDP。图中的ULP指的是Upper Layer Protocol，即上层协议，iWARP通过[Verbs接口](https://zhuanlan.zhihu.com/p/329198771)向上层提供服务。ULP可以是一些存储协议，例如：[iSCSI](https://zh.m.wikipedia.org/zh-hans/ISCSI)（Internet小型计算机系统接口）[^iSCSI]，可能是中间件，例如：[UCX](https://blog.csdn.net/weixin_42952928/article/details/118295861)[^UCX]，也可能是用户应用程序。
 
-![image-20221101103352160](image/RDMA/image-20221101103352160.png)
+![image-20221101103352160](image/RDMA基础知识/image-20221101103352160.png)
 
 <center>iWARP协议栈的层次关系</center>
 
@@ -108,7 +108,7 @@ InfiniBand技术特点：
 
 &emsp;&emsp;DDP是iWARP的核心，负责在传输层协议之上实现零拷贝的功能。DDP的报文中包含有描述内存区域的信息，硬件可以直接根据DDP报文中的控制信息，通过DMA搬移DDP报文中的数据到内存中的目的地。上述过程不需要CPU的参与，所以DDP是最能体现RDMA技术核心思想的一层。
 
-![img](image/RDMA/v2-30aad23e28563f5aef81ff37e9e08eda_720w.webp)
+![img](image/RDMA基础知识/v2-30aad23e28563f5aef81ff37e9e08eda_720w.webp)
 
 <center>DDP层的功能示意图</center>
 
@@ -116,7 +116,7 @@ InfiniBand技术特点：
 
 &emsp;&emsp;RDMA是iWARP协议栈中最靠近用户的一层，主要功能是为上层用户提供RDMA语义，支撑他们的Send/RDMA Read/RDMA Write等各种类型的请求。RDMAP依赖于下层的DDP提供的零拷贝功能来实现对应的用户请求。
 
-![image-20221101151152707](image/RDMA/image-20221101151152707.png)
+![image-20221101151152707](image/RDMA基础知识/image-20221101151152707.png)
 
 <center>RDMAP层的功能示意图</center>
 
@@ -124,7 +124,7 @@ InfiniBand技术特点：
 
 &emsp;&emsp;MPA这一层负责在发送端按照一定的算法在TCP流中加入控制信息，从而使得接收端可以按照算法识别出流中的DDP消息的分界。实际上完成的是将DDP适配TCP的工作。当DDP的下层是SCTP协议时就不需要MPA这一层了，因为SCTP可以识别出上层协议的分界。
 
-![img](image/RDMA/v2-0b4cbf5e6ffd25d7f0fc2464555334b4_720w.webp)
+![img](image/RDMA基础知识/v2-0b4cbf5e6ffd25d7f0fc2464555334b4_720w.webp)
 
 <center>MPA层的功能示意图</center>
 
@@ -144,7 +144,7 @@ InfiniBand技术特点：
 
 &emsp;&emsp;RoCE技术支持在以太网上承载IB协议，实现RDMA over Ethernet。RoCE与InfiniBand技术有相同的软件应用层及传输控制层，仅网络层及以太网链路层存在差异。
 
-![image-20221101201402644](image/RDMA/image-20221101201402644.png)
+![image-20221101201402644](image/RDMA基础知识/image-20221101201402644.png)
 
 <center>RoCE架构</center>
 
@@ -154,7 +154,7 @@ InfiniBand技术特点：
 
 &emsp;&emsp;RoCE技术可通过普通以太网交换机实现，但服务器需要支持RoCE网卡，网络侧需要支持无损以太网络，这是由于IB的丢包处理机制中，任意一个报文的丢失都会造成大量的重传，严重影响数据传输性能。在RoCE网络中，需要构建无损以太网用于保证网络传输过程不丢包。
 
-![RDMA_rocev1_vs_rocev2](image/RDMA/rdma_rocev1_vs_rocev2.png)
+![RDMA_rocev1_vs_rocev2](image/RDMA基础知识/rdma_rocev1_vs_rocev2.png)
 
 ## RDMA通信原理
 
@@ -219,7 +219,7 @@ InfiniBand技术特点：
 
 &emsp;&emsp;WQE表示RDMA的一种“任务说明”，其中包含了软件所希望硬件去做的任务以及关于这个任务的详细信息；
 
-![image-20221102103248547](image/RDMA/image-20221102103248547.png)
+![image-20221102103248547](image/RDMA基础知识/image-20221102103248547.png)
 
 <center>WQ与WQE关系</center>
 
@@ -233,13 +233,13 @@ InfiniBand技术特点：
 
 &emsp;&emsp;任何通信过程都需要收、发两端，SQ表示发送队列，用来存放发送任务，RQ表示接收队列，用来存放接收任务。再一次Send-Recv过程中，发送端软件需要把表示一次发送任务的WQE放在SQ中，同样需要接收端软件需要给硬件下发一个表示接收任务的WQE，这样接收过去的任务才能知道存放在哪个位置。这个过程对于发送SQ来说称为Post Send，对于接收SQ来说称为Post-Receive。
 
-![image-20221102104152754](image/RDMA/image-20221102104152754.png)
+![image-20221102104152754](image/RDMA基础知识/image-20221102104152754.png)
 
 <center>接收与发送端的队列</center>
 
 &emsp;&emsp;在RDMA技术中，通信的基本单元称为QP，而不是节点，对于每个节点来说，每个进程都可以使用若干个QP，而每个本地QP可以关联一个远端QP。
 
-![image-20221102105045411](image/RDMA/image-20221102105045411.png)
+![image-20221102105045411](image/RDMA基础知识/image-20221102105045411.png)
 
 <center>SQ、RQ、QP关系</center>
 
@@ -249,7 +249,7 @@ InfiniBand技术特点：
 
 &emsp;&emsp;SRQ即Shared Receive Queue，意为共享接收队列，即多个QP共享一个RQ时称其为SRQ。
 
-![image-20221102105807892](image/RDMA/image-20221102105807892.png)
+![image-20221102105807892](image/RDMA基础知识/image-20221102105807892.png)
 
 <center>共享接收队列</center>
 
@@ -257,19 +257,19 @@ InfiniBand技术特点：
 
 &emsp;&emsp;CQ即完成队列，与WQ相同，其中也包含多个CQE，可以认为CQE和WQE是相反的概念，即CQE可认为是硬件给软件的“任务报告”，CQE中描述了某个任务是否被正确的执行，如果错误会将错误的信息描述在CQE中。
 
-![image-20221102110403019](image/RDMA/image-20221102110403019.png)
+![image-20221102110403019](image/RDMA基础知识/image-20221102110403019.png)
 
 <center>CQ与CQE的关系</center>
 
 &emsp;&emsp;每个CQE都包含某个WQE的完成信息，关系如下：
 
-![image-20221102110500758](image/RDMA/image-20221102110500758.png)
+![image-20221102110500758](image/RDMA基础知识/image-20221102110500758.png)
 
 <center>CQE与WQE关系</center>
 
 &emsp;&emsp;一次可靠服务类型的SEND-RECV操作中软硬件的协同如下：
 
-![image-20221102111559306](image/RDMA/image-20221102111559306.png)
+![image-20221102111559306](image/RDMA基础知识/image-20221102111559306.png)
 
 步骤如下：
 
@@ -288,11 +288,11 @@ InfiniBand技术特点：
 
 &emsp;&emsp;WR称为Work Request，意为工作请求；WC称为Work Completion，意为工作完成。这两者是WQE和CQE在用户层的映射。WQE与CQE本身对用户不可见，是驱动实现中的概念，用户只通过APU下发WR，接收端收到WC。
 
-![image-20221102113443379](image/RDMA/image-20221102113443379.png)
+![image-20221102113443379](image/RDMA基础知识/image-20221102113443379.png)
 
 <center>WQ与CQ</center>
 
-![image-20221102112907797](image/RDMA/image-20221102112907797.png)
+![image-20221102112907797](image/RDMA基础知识/image-20221102112907797.png)
 
 
 
@@ -331,7 +331,7 @@ RDMA的send/receive是双边操作，即必须要远端的应用感知参与才�
 4. A的RNIC异步调度到A的WQE，解析为SEND数据，将从buffer中直接向B发出数据。数据流到达B的RNIC之后，B的WQE被消耗，并把数据存储到WQE指向的存储位置。
 5. A、B通信完成后A的CQ中会产生完成消息CQE表示发送完成，与此同时，B的CQ也会产生一个完成消息表示接收完成，每个WQ中的WQE完成都会产生对应的CQE。
 
-![image-20221103100320322](image/RDMA/image-20221103100320322.png)
+![image-20221103100320322](image/RDMA基础知识/image-20221103100320322.png)
 
 <center>Post Receive Request（RR）行为</center>
 
@@ -345,7 +345,7 @@ RDMA的send/receive是双边操作，即必须要远端的应用感知参与才�
 
 单边操作不需要对方应用程序参与，只需提供直接访问远程的虚拟地址，适用于批量的数据传输。
 
-![image-20221103100650799](image/RDMA/image-20221103100650799.png)
+![image-20221103100650799](image/RDMA基础知识/image-20221103100650799.png)
 
 <center>单边操作READ</center>
 
@@ -358,7 +358,7 @@ RDMA的send/receive是双边操作，即必须要远端的应用感知参与才�
 5. A发送完成后会向B发出整个数据传输的状态信息；
 6. 所有传输完成后，B返回一个ACK给A，表示RDMA WRITE请求已完成。
 
-![image-20221103100709465](image/RDMA/image-20221103100709465.png)
+![image-20221103100709465](image/RDMA基础知识/image-20221103100709465.png)
 
 <center>RDMA Read/Write行为</center>
 
@@ -366,7 +366,7 @@ RDMA的send/receive是双边操作，即必须要远端的应用感知参与才�
 
 Mellanox OFED是一个单一的软件堆栈，包括驱动、中间件、用户接口，以及一系列的标准协议IPoIB、SDP、SRP、iSER、RDS、DAPL(Direct Access Programming Library)，支持MPI、Lustre/NFS over RDMA等协议，并提供Verbs编程接口；Mellanox OFED由开源OpenFabrics组织维护。
 
-![image-20221103104802626](image/RDMA/image-20221103104802626.png)
+![image-20221103104802626](image/RDMA基础知识/image-20221103104802626.png)
 
 <center>Mellanox OFED架构</center>
 

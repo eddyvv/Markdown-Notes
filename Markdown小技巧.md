@@ -134,3 +134,62 @@ x<sup>2</sup>+y<sup>2</sup>
 示例：
 
 跳转至[文章内跳转](#jump)
+
+# 单元格合并
+
+```html
+<table>
+    <tr>
+        <td>类别</td>
+        <td>名称</td>
+    </tr>
+    <tr>
+        <td rowspan="2">颜色</td>
+        <td>红色</td>
+    </tr>
+    <tr>
+        <td>黄色</td>
+    </tr>
+    <tr>
+        <td colspan="2">姓氏</td>
+    </tr>
+    <tr>
+        <td>王</td>
+        <td>张</td>
+    </tr>
+</table>
+```
+
+效果：
+
+<table>
+    <tr>
+        <td>类别</td>
+        <td>名称</td>
+    </tr>
+    <tr>
+        <td rowspan="2">颜色</td>
+        <td>红色</td>
+    </tr>
+    <tr>
+        <td>黄色</td>
+    </tr>
+    <tr>
+        <td colspan="2">姓氏</td>
+    </tr>
+    <tr>
+        <td>王</td>
+        <td>张</td>
+    </tr>
+</table>
+# html加粗
+
+```bash
+<b>a</b>
+```
+
+效果：
+
+未加粗：a
+
+加粗：<b>a</b>
