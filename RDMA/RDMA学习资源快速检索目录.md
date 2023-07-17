@@ -29,6 +29,8 @@
 >
 > 专栏：[RDMA杂谈 - 知乎 (zhihu.com)](https://www.zhihu.com/column/c_1231181516811390976)
 
+## 专栏
+
 [0. 《RDMA杂谈》专栏索引 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/164908617)
 
 [1. RDMA概述 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/138874738)
@@ -83,9 +85,23 @@
 
 [【RDMA】RDMA 学习资料总目录_rdma开发 书_bandaoyu的博客-CSDN博客](https://blog.csdn.net/bandaoyu/article/details/120485737)
 
-专栏[RDMA_bandaoyu的博客-CSDN博客](https://blog.csdn.net/bandaoyu/category_11340014.html)
+## RDMA专栏
 
-专栏[网络编程_bandaoyu的博客-CSDN博客](https://blog.csdn.net/bandaoyu/category_8400071.html)
+专栏 [RDMA_bandaoyu的博客-CSDN博客](https://blog.csdn.net/bandaoyu/category_11340014.html)
+
+**RDMA技术详解**
+
+[【RDMA】技术详解（一）：RDMA概述_bandaoyu的博客-CSDN博客](https://blog.csdn.net/bandaoyu/article/details/112859853)
+
+[【RDMA】技术详解（二）：Send Receive操作_ibv_send_recv_bandaoyu的博客-CSDN博客](https://blog.csdn.net/bandaoyu/article/details/112859932)
+
+[【RDMA】技术详解（三）：理解RDMA Scatter Gather List|聚散表_bandaoyu的博客-CSDN博客](https://blog.csdn.net/bandaoyu/article/details/112859981)
+
+[【RDMA】技术详解（四）：RDMA之Verbs和编程步骤_ibv_qp_init_attr_bandaoyu的博客-CSDN博客](https://blog.csdn.net/bandaoyu/article/details/112860396)
+
+## 网络专栏
+
+专栏 [网络编程_bandaoyu的博客-CSDN博客](https://blog.csdn.net/bandaoyu/category_8400071.html)
 
 # 论坛
 
@@ -99,3 +115,14 @@
 
 [(23) The Linux SoftRoCE Driver - YouTube](https://www.youtube.com/watch?v=NumH5YeVjHU) OFA组织2017年年会时对于Soft-RoCE实现的介绍视频
 
+# 书籍
+
+[《Linux高性能网络详解：从DPDK、RDMA到XDP》](https://book.douban.com/subject/36322557/)
+
+# 编程
+
+RDMA编程入门可参考的项目：
+
+https://github.com/tarickb/the-geek-in-the-corner
+
+https://github.com/jcxue/RDMA-Tutorial
