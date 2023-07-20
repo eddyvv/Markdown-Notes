@@ -38,7 +38,7 @@ Linux网络子系统
 
 ![image-20221208155853528](image/Linux%E7%BD%91%E7%BB%9C%E5%AD%90%E7%B3%BB%E7%BB%9F/image-20221208155853528.png)
 
-Linux内核只涉及OSI模型中的3层，其中L2、L3、L4、分别对应OSI模型中的数据链路层、网络层、传输层，本质上，Linux内核主要任务是完成将接收到的数据包从L2（网络设备驱动）传输给L3（网络层，通常为IPv4/IPv6）。若数据包目的地为当前设备，Linux内核网络战将传递给L4（传输层，应用到TCP/IP协议侦听套接字），若数据包需要转发，将其交还给L2进行传输，对于本地所生成出战的数据包，从L4依次传递给L3和L2，最后由网络设备驱动进行传输。
+Linux内核只涉及OSI模型中的3层，其中L2、L3、L4、分别对应OSI模型中的数据链路层、网络层、传输层，本质上，Linux内核主要任务是完成将接收到的数据包从L2（网络设备驱动）传输给L3（网络层，通常为IPv4/IPv6）。若数据包目的地为当前设备，Linux内核网络栈将传递给L4（传输层，应用到TCP/IP协议侦听套接字），若数据包需要转发，将其交还给L2进行传输，对于本地所生成出战的数据包，从L4依次传递给L3和L2，最后由网络设备驱动进行传输。
 
 
 
@@ -62,6 +62,24 @@ dev_queue_xmit()
     					->ops->ndo_start_xmit(skb, dev);
 ```
 
+# Linux网络发包
+
+![img](image/Linux%E7%BD%91%E7%BB%9C%E5%AD%90%E7%B3%BB%E7%BB%9F/0e29ce387f45ddc5cd241eb93e332df7.png)
+
+<center>数据包发送流程</center>
+
+# Linux网络收包
+
+![img](image/Linux%E7%BD%91%E7%BB%9C%E5%AD%90%E7%B3%BB%E7%BB%9F/7ecb2e70a9c2ed546a5c19fd443b54a2-1689834989179-3.png)
+
+<center>数据包接收流程</center>
+
+
+
+![image-20230720192605186](image/Linux%E7%BD%91%E7%BB%9C%E5%AD%90%E7%B3%BB%E7%BB%9F/image-20230720192605186.png)
+
+
+
 
 
 
@@ -74,3 +92,4 @@ dev_queue_xmit()
 
 [Linux 网络栈接收数据（RX）：原理及内核实现（2022） (arthurchiao.art)](http://arthurchiao.art/blog/linux-net-stack-implementation-rx-zh/)
 
+[Linux 网络设备驱动开发（一） —— linux内核网络分层结构-腾讯云开发者社区-腾讯云 (tencent.com)](https://cloud.tencent.com/developer/article/2154372)
