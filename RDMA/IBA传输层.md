@@ -31,11 +31,11 @@ IBA操作被定义为包括请求消息和对于可靠服务的相应响应。�
 
 <table>
     <tr>
-        <td colspan="2"><b>属性</b></td>
-        <td><b>RC and XRC</b></td>
-        <td><b>RD</b></td>
-        <td><b>UD</b></td>
-        <td><b>UC</b></td>
+        <td colspan="2"><b><center>属性<center></b></td>
+        <td><b><center>RC and XRC<center></b></td>
+        <td><b><center>RD<center></b></td>
+        <td><b><center>UD<center></b></td>
+        <td><b><center>UC<center></b></td>
         <td><b>Raw数据报（IPv6和以太网类型）</b></td>
     </tr>
     <tr>
@@ -49,7 +49,7 @@ IBA操作被定义为包括请求消息和对于可靠服务的相应响应。�
     <tr>
         <td rowspan="5">可靠性</td>
         <td>检测到损坏的数据</td>
-        <td colspan="5">Yes</td>
+        <td colspan="5"><center><center>Yes</center></center></td>
 	<tr>
     	<td>数据交付保证</td>
         <td colspan="2">数据只传递一次</td>
@@ -59,16 +59,16 @@ IBA操作被定义为包括请求消息和对于可靠服务的相应响应。�
         <td>保证数据顺序</td>
         <td>Yes，每个连接</td>
         <td>Yes，来自任何一个源QP的分组被排序到多个目的地QP。</td>
-        <td>No</td>
+        <td><center>No</center></td>
         <td>检测到无序和重复的数据包。</td>
-        <td>No</td>
+        <td><center>No</center></td>
     </tr>
     <tr>
     	<td>检测到数据丢失</td>
-        <td colspan="2">Yes</td>
-        <td>No</td>
-        <td>Yes</td>
-        <td>No</td>
+        <td colspan="2"><center>Yes</center></td>
+        <td><center>No</center></td>
+        <td><center>Yes</center></td>
+        <td><center>No</center></td>
     </tr>
     <tr>
         <td>检测到数据丢失</td>
@@ -81,6 +81,7 @@ IBA操作被定义为包括请求消息和对于可靠服务的相应响应。�
         <td>错误恢复</td>
     </tr>
 </table>
+
 
 ## 基本传输头/BTH
 

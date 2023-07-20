@@ -301,7 +301,7 @@ int pci_iov_init(struct pci_dev *dev)
 
 由使能SR-IOV命令来看，入口为每个PCIe设备的`sriov_numvfs`节点。
 
-内核源码中SR-IOV相关代码位于`/drivers/pci/iov.c`文件下。
+内核源码中SR-IOV相关代码位于`/drivers/pci/iov.c`文件下，当用户使用命令行配置`sriov_numvfs`的数量时，会触发内核调用函数`sriov_numvfs_store`，此时配置的数量便是函数的最后一个参数，用于决定开启的vf的数量。
 
 ### sriov_numvfs_store
 
@@ -548,12 +548,6 @@ err_pcibios:
 }
 ```
 
-
-
-
-
-
-
 # 相关词汇
 
 HPA（Host Physical Address）宿主机物理内存地址；
@@ -562,9 +556,7 @@ GPA（Guest Physical Address）虚拟机访问的物理地址；
 
 [IOMMU](https://zhuanlan.zhihu.com/p/348826888)（Input/Output Memory Mangement Uint）输入输出内存管理单元；
 
-`<a id="VMM"/>`VMM（Virtual Machine Manage）虚拟机管理器
-
-
+<span id="VMM">VMM</span>（Virtual Machine Manage）虚拟机管理器
 
 # 参考
 

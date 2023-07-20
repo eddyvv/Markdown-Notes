@@ -17,6 +17,16 @@ sudo vim /etc/NetworkManager/NetworkManager.conf 把false改成true　
 sudo service network-manager start
 ```
 
+## Ubuntu不显示网络连接
+
+```bash
+sudo nmcli networking off
+
+sudo nmcli networking on
+
+sudo service network-manager restart
+```
+
 
 
 ## Ubuntu安装VM-Tools
