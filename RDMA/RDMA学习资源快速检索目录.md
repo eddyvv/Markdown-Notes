@@ -127,7 +127,11 @@ https://github.com/tarickb/the-geek-in-the-corner
 
 https://github.com/jcxue/RDMA-Tutorial
 
+## 驱动
 
+hns驱动分析
+
+[RDMA Linux hns驱动分析_rdma驱动_CodeFarmerL的博客-CSDN博客](https://blog.csdn.net/lincolnjunior_lj/article/details/131358376)
 
 
 

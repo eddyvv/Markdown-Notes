@@ -96,3 +96,4 @@ sudo ethtool -K enps4f0np0 tso on
 
 [https://www.kernel.org/doc/Documentation/networking/segmentation-offloads.txt](https://www.kernel.org/doc/Documentation/networking/segmentation-offloads.txt) Linux内核offload的描述
 
+[Linux GRO流程分析_gro linux_zhenghuaduo的博客-CSDN博客](https://blog.csdn.net/zgy666/article/details/106989856) 内核GRO流程分析。
