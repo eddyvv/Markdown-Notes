@@ -120,9 +120,7 @@ CONFIG_DEBUG_INFO_BTF=n
 #基于文本选单的配置界面，字符终端下推荐使用
 make menuconfig
 
-make -j$(nproc)
-
-make all
+make all -j$(nproc)
 
 # 编译模块
 make -j$(nproc) modules
