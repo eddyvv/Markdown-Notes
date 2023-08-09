@@ -709,6 +709,22 @@ AVAILABILITY
 Ethtool version 5.4                                                                              January 2020                                                                                      ETHTOOL(8)
 ```
 
+## 常用参数
+
+```bash
+-i：显示网卡驱动的信息，如驱动的名称、版本等；
+
+-S：查看网卡收发包的统计情况；
+
+-g/-G：查看或者修改RingBuffer的大小；
+
+-l/-L：查看或者修改网卡队列数；
+
+-c/-C：查看或者修改硬中断合并策略；
+
+-k/-K：查看或者修改offload相关配置；
+```
+
 
 
 ## 查看网口基本信息
@@ -742,7 +758,7 @@ Cannot get wake-on-lan settings: Operation not permitted
 	Link detected: yes
 ```
 
-## 查询网口驱动相关信息
+## 查询网口驱动相关信息 `-i`
 
 ```bash
 $ ethtool -i ens33
@@ -758,7 +774,7 @@ supports-register-dump: yes
 supports-priv-flags: no
 ```
 
-## 查询网口收发包统计信息
+## 查询网口收发包统计信息 `-S`
 
 ```bash
 $ ethtool -S ens33
@@ -811,7 +827,15 @@ NIC statistics:
      dropped_smbus: 0
 ```
 
-## 显示网卡 offload 参数的状态
+rx_fifo_errors 如果不为 0（在 ifconfig 中体现为 overruns 指标增长），就表示有包因为 Ring Buffer 装不下而被丢弃了。增大 Ring Buffer 的大小可以缓解丢包问题。修改命令如下：
+
+```bash
+$ ethtool -G eth0 rx 4096 tx 4096
+```
+
+增大队列长度可以解决偶发的瞬时丢包问题。不过会引入新的问题，那就是排队的包过多会导致网络包的延时增加。
+
+## 显示网卡 offload 参数的状态 `-k`
 
 ```bash
 $ ethtool -k ens33 
@@ -878,7 +902,7 @@ rx-gro-list: off
 macsec-hw-offload: off [fixed]
 ```
 
-### 配置网卡 offload 参数
+### 配置网卡 offload 参数 `-K`
 
 ```bash
 $ ethtool -K eth0 rx-checksum on|off
@@ -891,13 +915,13 @@ $ ethtool -K eth0 ntuple on | off
 
 
 
-## 查看多队列网卡的队列使用情况
+## 查看多队列网卡的队列使用情况 `-l`
 
 ```bash
 $ ethtool -l eth0
 ```
 
-### 修改队列数
+### 修改队列数 `-L`
 
 ```bash
 $ ethtool -L eth0 combined 32
@@ -917,9 +941,51 @@ for i in `cat /proc/interrupts | grep eth0 \
 $ ls /sys/class/net/eth0/queues
 ```
 
+## 硬中断合并
 
+发生硬中断时，CPU 会消耗一部分性能来处理上下文切换，以便处理完中断后恢复原来的工作，如果网卡每收到一个包就触发硬中断，频繁中断会使 CPU 工作效率变低。如果能适当降低中断的频率，多攒几个包一起发出硬中断，会使 CPU 的工作效率提升。虽然降低中断频率能使得收包并发量提高，但是会使一些包的延迟增大。
 
+### 查看硬中断合并策略 `-c`
 
+```bash
+ethtool -c ens33
+Coalesce parameters for ens33:
+Adaptive RX: off  TX: off
+stats-block-usecs: 0
+sample-interval: 0
+pkt-rate-low: 0
+pkt-rate-high: 0
+
+rx-usecs: 3
+rx-frames: 0
+rx-usecs-irq: 0
+rx-frames-irq: 0
+
+tx-usecs: 0
+tx-frames: 0
+tx-usecs-irq: 0
+tx-frames-irq: 0
+
+rx-usecs-low: 0
+rx-frames-low: 0
+tx-usecs-low: 0
+tx-frames-low: 0
+
+rx-usecs-high: 0
+rx-frames-high: 0
+tx-usecs-high: 0
+tx-frames-high: 0
+```
+
+- **Adaptive RX**：自适应中断合并，网卡驱动自己判断啥时候合并；
+- **rx-usecs**：每当过这么长时间过后，触发一个 RX interrupt 硬中断；
+- **rx-frames**：每当累计收到这么多个帧后，触发一个 RX interrupt 硬中断；
+
+### 修改硬中断合并策略 `-C`
+
+```bash
+$ ethtool -C eth0 adaptive-rx on
+```
 
 
 

@@ -1,4 +1,4 @@
-# CMA
+# cma_alloc: alloc failed
 
 ```bash
 [   69.494324][ 5] [  T887] cma: cma_alloc: alloc failed, req-size: 8 pages, ret: -12
@@ -85,8 +85,6 @@ Hugepagesize:       2048 kB
 Hugetlb:               0 kB
 
 ```
-
-
 
 解决方法
 

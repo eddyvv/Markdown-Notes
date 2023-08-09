@@ -44,6 +44,12 @@ TSO、UFO、LRO基于网卡特性，可在网卡上进行包的合并与拆分�
 | on   | off  | 网卡硬件阶段 |
 | off  | on   | 网卡驱动阶段 |
 
+**GRO**（**G**eneric **R**eceive **O**ffloading）是 **LRO**（**L**arge **R**eceive **O**ffload，多数是在 NIC 上实现的一种硬件优化机制）的一种软件实现，从而能让所有 NIC 都支持这个功能。网络上大部分 MTU 都是 1500 字节，开启 Jumbo Frame 后能到 9000 字节，如果发送的数据超过 MTU 就需要切割成多个数据包。通过合并「足够类似」的包来减少传送给网络协议栈的包数，有助于减少 CPU 的使用量。GRO 使协议层只需处理一个 header，而将包含大量数据的整个大包送到用户程序。如果用 `tcpdump` 抓包看到机器收到了不现实的、非常大的包，这很可能是系统开启了 GRO。
+
+GRO 和「硬中断合并」的思想类似，不过阶段不同。「硬中断合并」是在中断发起之前，而 GRO 已经在处理软中断中了。
+
+**napi_gro_receive** 就是在收到数据包的时候合并多个数据包用的，如果收到的数据包需要被合并，**napi_gro_receive** 会很快返回。当合并完成后会调用 **napi_skb_finish** ，将因为数据包合并而不再用到的数据结构释放。最终会调用到 **netif_receive_skb** 将数据包交到上层网络栈继续处理。**netif_receive_skb** 就是数据包从 Ring Buffer 出来后到上层网络栈的入口。
+
 ## Bluefiled2网卡配置TSO、GSO、LRO、GRO
 
 安装`ethtool`工具

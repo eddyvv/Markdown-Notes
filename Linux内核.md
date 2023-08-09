@@ -12,7 +12,21 @@
 
 # KConfig文件
 
-主要用来完成config条目界面，一般用来控制一个条件/目录的编译动作。
+Kconfig用于内核的配置，主要用来完成config条目界面，一般用来控制一个条件/目录的编译动作，`make menuconfig`显示的菜单信息便来自`.config`文件。
+
+## Kconfig语法
+
+| 关键字             | 内容                                                         |
+| ------------------ | ------------------------------------------------------------ |
+| `config`           | `config`是构成`Kconfig`的基本单元，其中定义了配置项的详细信息。 |
+| `menu/endmenu`     | `menu`的作用可以理解为一个目录，可以把一部分相关配置包含到一个`menu`中，这样有利于配置的分类显示，`menu`中可以嵌套包含`menu`。 |
+| `menuconfig`       | `menuconfig`有点类似 `menu`，但区别就在于 `menu` 后面多了一个 `config`，这个 `menu` 是可以配置的，前面比 `menu` 类型多了一个方框，通过空格可以修改这个配置项的选中状态。若选中进入该菜单项时和普通的 `menu` 是一样的。 |
+| `if/endif`         | `if/endif` 搭配使用，说明配置项是位于 `if` 和 `endif` 中。`if/endif` 中的部分就是 `MODULES`子目录显示的内容。如果选中了 `MODULE`，那么 `if` 和 `endif` 中的内容可以显示。如果没有定义，就只能进入一个空目录。 |
+| `choice/endchoice` | `choice` 的作用，定义了一组选择项，从中选择一个。该配置项的类型只能是 `bool` 或者`tristate`。 |
+| `comment`          | 定义了在配置过程中显示给用户的注释，其中唯一可选的属性是依赖关系 `depends on`。 |
+| `source`           | `source` 中用来读取指定的配置文件，通过 `source` 就可以将各目录下的 `Kconfig` 文件层层嵌套进`source`来，类似 `c` 语言中的 `include`。 |
+
+
 
 ## config条目
 
@@ -67,7 +81,39 @@ obj-m 编译成模块
 obj-n 不编译
 ```
 
+# Kbuild
 
+`Kbuild`即`Kernel build`，是内核的一个编译系统。
+
+**简单来说，`Kbuild`是对`Makefile`语法功能的扩展。**
+
+例如，`kbuild`定义了很多有用的变量如`obj-m`、`obj-y`、`-objs`等等，用户只要为这些变量赋值，`kbuild`会自动把代码编译到内核或者编译成模块。
+
+`Linux`内核使用`kbuild`编译时，会扫描两次`Linux`的`Makefile`：首先读取顶层的`Makefile`文件，然后根据读取到的内容第二次读取`kbuild`的`Makefile`文件来编译`Linux`内核。
+
+内核的`Makefile`包括五部分：
+
+| 文件                     | 内容                                                         |
+| ------------------------ | ------------------------------------------------------------ |
+| 顶层`Makefile`           | 顶层`Makefile` 文件定义两个主要的目标：`vmlinux`（内核映像）和所有的模块，顶层`Makefile` 文件根据内核配置，通过递归编译内核代码树子目录建立这两个文件。 |
+| `.config`                | 配置完成后生成`.config`文件，`Kbuild`中的`Makefile`会读取该文件的配置，比如个、各目录中`Makefile`会查看某一个项配置的是`y`还是`n`。 |
+| `arch/$(ARCH)/Makefile`  | 顶层`Makefile`文件引用一个名为`arch/$(ARCH)/Makefile`的文件，这个文件提供了与平台相关的一些信息。 |
+| `scripts/Makefile.*`     | `scripts/Makefile.*`包含了所有的定义和规则，与`Makefile`文件一起编译出内核映像。 |
+| 各目录中的`Makefile`文件 | 每个子目录都有一个`Makefile`文件，子目录`Makeifle`文件根据上级目录`Makefile`文件命令启动编译。这些`Makefile`使用`.config`文件配置数据构建各种文件列表，并使用这些文件列表编译内嵌或模块目标文件。 |
+
+# Makefile
+
+顶层的`Makefile`是编译的入口，下面分析一下顶层`Makefile`文件。
+
+顶层`Makefile`会向各子目录的`Makefile`传递一些信息，有些变量，例如`vmlinux-dirs`，不仅在顶层`Makefile`中定义并且赋值，而且在`arch/*/Makefile`还作了扩充。
+
+| 变量         | 内容                                                         |
+| ------------ | ------------------------------------------------------------ |
+| 内核版本     | 版本信息定义了荡秋千内核的版本，`VERSION=4`，`PATCHLEVEL=4`，`SUBLEVEL=4`，`EXATAVERSION=`，他们共同构成内核的发行版本号`4.4.4`。 |
+| CPU体系结构  | 用`ARCH`定义目标`CPU`的体系结构，比如`ARCH:=arm`等。         |
+| 源码路径     | 很多`scripts/Makefile.*`规则被很多不同目录下的`Makefile`所共享，所以要针对不同的路径操作不同的文件，就需要定义但概念的相对路径。 |
+| 递归目录定义 | `init-y`、`core-y`、`libs-y`、`drivers-y`、`net-y`。         |
+| 编译选项     | 如`CPP`、`CC`、`AS`、`LD`、`AR`、`KBUILD_CFLAGS`、`LDFLAGS_vmlinux`等编译参数。 |
 
 # 编译安装内核
 
