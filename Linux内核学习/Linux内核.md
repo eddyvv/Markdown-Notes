@@ -434,6 +434,16 @@ General setup  --->
 
 保存后重新编译安装即可。
 
+### 8. ERROR: Kernel configuration is invalid.
+
+```bash
+  ERROR: Kernel configuration is invalid.
+         include/generated/autoconf.h or include/config/auto.conf are missing.
+         Run 'make oldconfig && make prepare' on kernel src to fix it.
+```
+
+原因为内核未编译，
+
 ## 单独编译Linux内核的某一个模块
 
 找到对应的模块文件夹，找到需要编译的文件，确认编译的config文件

@@ -98,3 +98,7 @@ sudo vim /etc/default/grub
 GRUB_CMDLINE_LINUX_DEFAULT="quiet splash cma=128M"
 ```
 
+```bash
+sudo update-grub
+```
+

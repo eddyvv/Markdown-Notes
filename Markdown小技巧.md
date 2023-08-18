@@ -193,3 +193,27 @@ x<sup>2</sup>+y<sup>2</sup>
 未加粗：a
 
 加粗：<b>a</b>
+
+# 插入音频
+
+## 网易云音乐外链
+
+```html
+<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=86 src="//music.163.com/outchain/player?type=2&id=33367876&auto=1&height=66"></iframe>
+```
+
+## MP3音频文件
+
+```html
+<audio src="mp3文件链接地址"></audio>
+```
+
+# 插入视频
+
+```html
+<video src="视频链接"></video>
+```
+
+```html
+<iframe height=498 width=510 src="视频链接">
+```
