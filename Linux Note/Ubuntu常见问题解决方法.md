@@ -116,8 +116,6 @@ sftp>
 sftp> get -r /home/test F:/test
 ```
 
-
-
 ### 上载本都端文件至Linux home目录下
 
 ```bash
@@ -212,3 +210,6 @@ sudo vim /etc/default/grub
 sudo update-grub
 ```
 
+# 参考
+
+[Ubuntu网络 — Cloud Atlas 0.1 文档 (cloud-atlas.readthedocs.io)](https://cloud-atlas.readthedocs.io/zh_CN/latest/linux/ubuntu_linux/network/index.html)
