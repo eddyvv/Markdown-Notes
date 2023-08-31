@@ -172,7 +172,7 @@ make all -j$(nproc)
 make -j$(nproc) modules
 ```
 
-## 安装
+## 编译安装
 
 ### 首先安装模块
 
@@ -239,6 +239,24 @@ reboot
 
 [若重启未看到选择内核的页面参考](#GRUB)
 
+## 在线安装
+
+```bash
+sudo apt-cache search linux-image
+#查询列表中可更新的内核
+
+sudo apt-get install linux-image-4.15.0-39-generic  
+
+sudo apt-get install linux-headers-4.15.0-39-generic      
+
+sudo apt-get install linux-modules-4.15.0-39-generic	   
+
+sudo apt-get install linux-modules-extra-4.15.0-39-generic    
+
+```
+
+
+
 ## 其他操作
 
 ### 清理内核源目录
@@ -252,7 +270,7 @@ sudo make clean
 
 ### 卸载安装的内核
 
-获取所有安装的内核版本
+#### 获取所有安装的内核版本
 
 ```bash
 dpkg --get-selections | grep linux
