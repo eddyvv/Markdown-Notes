@@ -124,6 +124,13 @@ git push --tags
 git rev-parse HEAD
 ```
 
+### 查看远程于本地文件更改
+
+```bash
+git diff --name-only
+git diff --name-only <本地分支> <origin/远程分支>
+```
+
 ### 保存工作现场
 
 ```bash

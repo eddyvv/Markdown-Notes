@@ -251,7 +251,7 @@ eddy@eddy:~$
 
 [[RDMA\] RDMA 初步使用操作 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/40775339) ibping测试RDMA
 
-
+[使用QEMU测试soft roce | 记录成长的痕迹 (joyxu.github.io)](http://joyxu.github.io/2020/12/24/soft-roce/)
 
 🎈
 
