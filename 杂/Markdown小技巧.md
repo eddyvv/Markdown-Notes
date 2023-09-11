@@ -126,6 +126,25 @@ H<sub>2</sub>O
 
 x<sup>2</sup>+y<sup>2</sup>
 
+# 设置字体
+
+## 颜色文字
+
+```markdown
+<font color=red>我是红色</font>
+```
+
+效果如下：
+
+<font color=red>我是红色</font>
+
+## 设置字体
+
+```markdown
+```
+
+
+
 # <span id="jump">文章内跳转</span>
 
 1. 定义一个锚点 ` <span id="jump">跳转到的地方</span>`

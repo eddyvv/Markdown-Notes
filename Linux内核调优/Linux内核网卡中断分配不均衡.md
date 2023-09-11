@@ -1,8 +1,4 @@
-# Linux内核网卡中断分配不均衡
-
-
-
-
+# Linux内核网卡中断分配不均衡调优
 
 ## 查看CPU具体中断情况
 
@@ -13,7 +9,12 @@ cat /proc/interrupts
 
 # 持续查看
 watch -d cat /proc/interrupts
+
+# 持续查看并检索
+watch -n 1 'egrep "CPU|ens33" /proc/interrupts'
 ```
+
+![watch_interrupts](image/Linux%E5%86%85%E6%A0%B8%E7%BD%91%E5%8D%A1%E4%B8%AD%E6%96%AD%E5%88%86%E9%85%8D%E4%B8%8D%E5%9D%87%E8%A1%A1/watch_interrupts.gif)
 
 `/proc/irq/[irq_num]/smp_affinity_list` 可以查看指定中断当前绑定的 CPU。
 
@@ -25,9 +26,7 @@ cat /proc/interrupts | grep ens33 | cut -d: -f1 | while read i; do echo -ne irq"
 
 输出
 
-```bash
-irq:19	 bind_cpu: 3
-```
+![image-20230908140038965](image/Linux%E5%86%85%E6%A0%B8%E7%BD%91%E5%8D%A1%E4%B8%AD%E6%96%AD%E5%88%86%E9%85%8D%E4%B8%8D%E5%9D%87%E8%A1%A1/image-20230908140038965.png)
 
 ### 查找对应网卡中断触发情况
 
@@ -37,9 +36,7 @@ cat /proc/interrupts | grep ens33 | tr -s ' ' '\t'|cut -f 1-15
 
 输出
 
-```bash
-	19:	0	8	0	835	IO-APIC	19-fasteoi	ens33
-```
+![image-20230908140105116](image/Linux%E5%86%85%E6%A0%B8%E7%BD%91%E5%8D%A1%E4%B8%AD%E6%96%AD%E5%88%86%E9%85%8D%E4%B8%8D%E5%9D%87%E8%A1%A1/image-20230908140105116.png)
 
 如输出所示，中断的处理大部分被CPU3所处理。
 
@@ -71,23 +68,21 @@ echo 2 > /proc/irq/19/smp_affinity_list
 
 查询中断分布
 
-```bash
-# cat /proc/interrupts | grep ens33
-  19:          0         75          0       2421   IO-APIC   19-fasteoi   ens33
+![watch_interrupts_1](image/Linux%E5%86%85%E6%A0%B8%E7%BD%91%E5%8D%A1%E4%B8%AD%E6%96%AD%E5%88%86%E9%85%8D%E4%B8%8D%E5%9D%87%E8%A1%A1/watch_interrupts_1.gif)
 
-```
+## 网络数据处理监控
 
-
-
-## /proc/net/softnet_stat
+### /proc/net/softnet_stat
 
 `/proc/net/softnet_stat`用于网络数据处理监控。
 
 ```bash
 cat /proc/net/softnet_stat
+0000002c 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+0000007d 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+0000001e 00000000 00000002 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+00000073 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
 ```
-
-
 
 `/proc/net/softnet_stat`的每一行对应一个`struct softnet_data`数据结构，每个CPU一个，值之间用一个空格分隔，并以十六进制显示。
 
@@ -98,6 +93,33 @@ cat /proc/net/softnet_stat
 * 第九个值，`sd->cpu_collision`，是在发送数据包尝试获取设备锁时发生冲突的次数。本文讨论的是接收，因此下面不会看到这个统计量。
 * 第十个值，`sd->received_rps`，是唤醒此 CPU 通过处理器间中断处理数据包的次数。
 * 最后一个值，`flow_limit_count`，是达到流量限制的次数。流量限制是可选的 `Receive Packet Steering`功能，稍后会探讨到该特性。
+
+## 批量配置中断亲和性
+
+```bash
+ 1 #!/bin/bash
+  2 
+  # nic_queue_name为网卡使用队列的名称
+  3 nic_queue_name=$1
+  4 array=($(cat /proc/interrupts | grep $nic_queue_name | awk '{gsub(/:/, "", $1); printf "%s%s", (NR==1 ? "" : " "), $1}'))
+  5 array_len=${#array[@]}
+  6 
+  7 # 获取CPU核心数
+  8 core_count=$(nproc)
+  9 
+ 10 # 计算要输出的核心数（0到core_count-1）
+ 11 output_cores=$(seq 0 $((core_count-1)))
+ 12 
+ 13 # 将输出核心数与数组长度取模，以循环使用
+ 14 output_cores=($output_cores)
+ 15 output_core_count=${#output_cores[@]}
+ 16 
+ 17 for ((index=0; index<array_len; index++)); do
+ 18   irq="${array[index]}"
+ 19   core="${output_cores[index % output_core_count]}"
+ 20   echo "$core" > /proc/irq/$irq/smp_affinity_list
+ 21 done
+```
 
 # 参考
 
@@ -112,3 +134,5 @@ cat /proc/net/softnet_stat
 [Linux 多核下绑定硬件中断到不同 CPU（IRQ Affinity）-阿里云开发者社区 (aliyun.com)](https://developer.aliyun.com/article/64868)
 
 [[译1\]linux网络栈监控及调优：数据接收-电子工程专辑 (eet-china.com)](https://www.eet-china.com/mp/a203948.html)
+
+[第 34 章 调整网络性能 Red Hat Enterprise Linux 8 | Red Hat Customer Portal](https://access.redhat.com/documentation/zh-cn/red_hat_enterprise_linux/8/html/monitoring_and_managing_system_status_and_performance/tuning-the-network-performance_monitoring-and-managing-system-status-and-performance)

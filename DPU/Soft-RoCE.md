@@ -119,7 +119,7 @@ ibv_devinfo -d <网卡名称>
 
 ### 其他相关命令
 
-删除RDMA内核模块
+#### 删除RDMA内核模块
 
 ```bash
 sudo rdma link delete <rxe name>
@@ -127,37 +127,37 @@ sudo rdma link delete <rxe name>
 
 其中rxe name为ibv_devices显示的rxe设备名称
 
-查看RDMA连接状态
+#### 查看RDMA连接状态
 
 ```bash
 rdma link show
 ```
 
-更改MTU包大小
+#### 更改MTU包大小
 
 ```bash
 sudo ifconfig <网卡名称> mtu <MTU包大小>
 ```
 
-显示所有RDMA网口的所有信息
+#### 显示所有RDMA网口的所有信息
 
 ```bash
 ibv_devinfo -v
 ```
 
-查看链路类型
+#### 查看链路类型
 
 ```bash
 ibstat
 ```
 
-查看网络中infiniband设备
+#### 查看网络中infiniband设备
 
 ```bash
 ibnodes
 ```
 
-验证端到端 RDMA 通讯是否在用户空间应用程序中正常工作
+#### 验证端到端 RDMA 通讯是否在用户空间应用程序中正常工作
 
 server
 

@@ -109,8 +109,6 @@ $ sudo rxe_cfg status
   ens33  yes   e1000                           rxe0  1024  (3)
 ```
 
-
-
 查看设备
 
 ```bash
@@ -125,10 +123,6 @@ $ ibv_devices
 ```bash
 $ rxe_cfg remove ens33
 ```
-
-
-
-
 
 # 参考
 
