@@ -31,6 +31,18 @@ git commit -m [说明]
 ```
 git status
 ```
+### 查看修改的文件
+
+```bash
+#查看某次提交修改的文件
+git show --name-only <commit>
+
+#查看最新一次提交修改的文件
+git diff --name-only HEAD^..HEAD
+```
+
+
+
 ### git push提交成功后撤销回退
 
 ```
@@ -246,6 +258,13 @@ git push
 ```
 
 若需要删除远程，同时删除本地，去掉命令里的`-r`即可。
+
+撤销本地所有更改，并拉取远程最新代码
+
+```bash
+git fetch origin
+git reset --hard origin/<branch>
+```
 
 ## 统计代码行数
 
