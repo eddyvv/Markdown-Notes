@@ -1,10 +1,6 @@
-## git相关操作
-### 配置GitHub账户
+# git相关操作
 
-```bash
-git config --global user.name "用户名"
-git config --global user.email "邮箱地址"
-```
+## 常用操作
 ### git本地库推送到远程
 
 ```git
@@ -16,6 +12,50 @@ git add .
 git commit -m "提交信息"
 git push
 ```
+## 配置
+
+### 配置GitHub账户
+
+```bash
+git config --global user.name "用户名"
+git config --global user.email "邮箱地址"
+```
+
+### 配置SSH
+
+```bash
+ssh-keygen -t rsa -C "xxx@xxx.com"
+//执行后一直回车即可
+在/home/.ssh/文件夹找到id_rsa.pub，将其配置到对应的git远程仓库的SSH配置中即可
+```
+
+### 配置子项目
+
+```bash
+#添加一个子项目到本项目下
+$ git submodule add <远程仓库的URL> <子模块路径>
+```
+
+### 代理配置
+
+#### 设置代理
+
+设置代理，根据自己端口号设置。
+
+```bash
+git config --global http.proxy http://127.0.0.1:1080
+git config --global https.proxy http://127.0.0.1:1080
+```
+
+#### <span id="取消代理">取消代理</span>
+
+```bash
+git config --global --unset http.proxy
+git config --global --unset https.proxy
+```
+
+## 撤销与删除
+
 ### 删除git本地缓存
 
 ```git
@@ -26,6 +66,64 @@ git rm -r --cached .
 ```git
 git commit -m [说明]
 ```
+### git push提交成功后撤销回退
+
+```
+git reflog //查看版本更新情况
+git reset --hard [版本号]
+git push --force //推送至远程
+```
+
+### 漏掉某个文件的commit
+
+在提交完之后发现漏掉文件或者信息填写错误，可使用<font color = red> --amend </font>
+```c
+git commit --amend
+```
+
+### 强制远程仓库回退至某个版本
+
+```bash
+git push --force origin <commit_hash>:<branch>
+```
+
+### 撤销上一次`commit`
+
+```bash
+git reset --soft HEAD^
+```
+
+### 回滚至指定版本
+
+```bash
+git reset --hard id
+```
+
+### 撤销上次push
+
+```bash
+git push --force origin HEAD^:master
+```
+
+### 撤销本地所有更改，并拉取远程最新代码
+
+```bash
+git fetch origin
+git reset --hard origin/<branch>
+```
+
+### 删除某个分支
+
+```bash
+#确保切换到其他分支
+$ git branch -d d2000
+
+#删除远程仓库的分支
+$ git push origin --delete d2000
+```
+
+## 查看
+
 ### 显示变更信息
 
 ```
@@ -41,34 +139,34 @@ git show --name-only <commit>
 git diff --name-only HEAD^..HEAD
 ```
 
-
-
-### git push提交成功后撤销回退
-
-```
-git reflog //查看版本更新情况
-git reset --hard [版本号]
-git push --force //推送至远程
-```
-
-### 撤销操作
-
-在提交完之后发现漏掉文件或者信息填写错误，可使用<font color = red> --amend </font>
-```c
-git commit --amend
-```
-
-### 撤销上一次`commit`
+### git查看本地仓库的远程推送地址
 
 ```bash
-git reset --soft HEAD^
+git remote -v
 ```
 
-### 回滚至指定版本
+### 查看当前commit哈希值
 
 ```bash
-git reset --hard id
+git rev-parse HEAD
 ```
+
+### 查看远程于本地文件更改
+
+```bash
+git diff --name-only
+git diff --name-only <本地分支> <origin/远程分支>
+```
+
+### 查看最近几次的提交记录
+
+```bash
+git log -p -2
+```
+
+`-2`可修改数字，查看最近几次的提交记录。
+
+## 推送
 
 ### 本地推送至远程仓库新仓库
 
@@ -87,20 +185,6 @@ git push -u origin main
 git remote add origin git@github.com:eddyfile/learn-ldd-master.git
 git branch -M main
 git push -u origin main
-```
-
-### git查看本地仓库的远程推送地址
-
-```bash
-git remote -v
-```
-
-### 配置SSH
-
-```bash
-ssh-keygen -t rsa -C "xxx@xxx.com"
-//执行后一直回车即可
-在/home/.ssh/文件夹找到id_rsa.pub，将其配置到对应的git远程仓库的SSH配置中即可
 ```
 
 ### 修改commit信息
@@ -130,19 +214,6 @@ git tag -a <标签名称> -m "标签的注释信息"
 git push --tags
 ```
 
-### 查看当前commit哈希值
-
-```bash
-git rev-parse HEAD
-```
-
-### 查看远程于本地文件更改
-
-```bash
-git diff --name-only
-git diff --name-only <本地分支> <origin/远程分支>
-```
-
 ### 保存工作现场
 
 ```bash
@@ -163,37 +234,7 @@ git stash apply
 git stash pop
 ```
 
-### 撤销上次push
 
-```bash
-git push --force origin HEAD^:master
-```
-
-查看最近几次的提交记录
-
-```bash
-git log -p -2
-```
-
-`-2`可修改数字，查看最近几次的提交记录。
-
-### 代理配置
-
-#### 设置代理
-
-设置代理，根据自己端口号设置。
-
-```bash
-git config --global http.proxy http://127.0.0.1:1080
-git config --global https.proxy http://127.0.0.1:1080
-```
-
-#### <span id="取消代理">取消代理</span>
-
-```bash
-git config --global --unset http.proxy
-git config --global --unset https.proxy
-```
 
 
 
@@ -239,7 +280,9 @@ config.ini
 #不忽略 根目录下的 /fw/bin/ 和 /fw/sf/ 目录；
 ```
 
-## 上次commit并push时未提交部分修改的文件，将这些文件再次提交至上次的commit并推送至远程
+## 其他操作
+
+### 上次commit并push时未提交部分修改的文件，将这些文件再次提交至上次的commit并推送至远程
 
 ```bash
 git add .
@@ -247,9 +290,9 @@ git commit --amend
 git push --force-with-lease
 ```
 
-## 添加忽略某个文件或文件夹后删除远程已经推送的文件或文件夹
+### 添加忽略某个文件或文件夹后删除远程已经推送的文件或文件夹
 
-删除远程仓库的文件，保留本地。
+#### 删除远程仓库的文件，保留本地。
 
 ```bash
 git rm -r --cached <文件夹>
@@ -259,14 +302,7 @@ git push
 
 若需要删除远程，同时删除本地，去掉命令里的`-r`即可。
 
-撤销本地所有更改，并拉取远程最新代码
-
-```bash
-git fetch origin
-git reset --hard origin/<branch>
-```
-
-## 统计代码行数
+### 统计代码行数
 
 统计当前项目代码行数
 
@@ -298,6 +334,6 @@ git log --pretty=’%aN’ | sort -u | wc -l
 git log --oneline | wc -l
 ```
 
-## Failed to connect to github.com port 443:connection timed out
+### Failed to connect to github.com port 443:connection timed out
 
 解决办法[取消代理](#取消代理)
