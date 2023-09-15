@@ -56,63 +56,14 @@ git config --global --unset https.proxy
 
 ## 撤销与删除
 
-### 删除git本地缓存
+### 删除
+
+#### 删除git本地缓存
 
 ```git
 git rm -r --cached .
 ```
-### 提交暂存区到仓库
-
-```git
-git commit -m [说明]
-```
-### git push提交成功后撤销回退
-
-```
-git reflog //查看版本更新情况
-git reset --hard [版本号]
-git push --force //推送至远程
-```
-
-### 漏掉某个文件的commit
-
-在提交完之后发现漏掉文件或者信息填写错误，可使用<font color = red> --amend </font>
-```c
-git commit --amend
-```
-
-### 强制远程仓库回退至某个版本
-
-```bash
-git push --force origin <commit_hash>:<branch>
-```
-
-### 撤销上一次`commit`
-
-```bash
-git reset --soft HEAD^
-```
-
-### 回滚至指定版本
-
-```bash
-git reset --hard id
-```
-
-### 撤销上次push
-
-```bash
-git push --force origin HEAD^:master
-```
-
-### 撤销本地所有更改，并拉取远程最新代码
-
-```bash
-git fetch origin
-git reset --hard origin/<branch>
-```
-
-### 删除某个分支
+#### 删除某个分支
 
 ```bash
 #确保切换到其他分支
@@ -120,6 +71,56 @@ $ git branch -d d2000
 
 #删除远程仓库的分支
 $ git push origin --delete d2000
+```
+
+## 
+
+### 撤销
+
+#### git push提交成功后撤销回退
+
+```
+git reflog //查看版本更新情况
+git reset --hard [版本号]
+git push --force //推送至远程
+```
+
+#### 撤销上一次`commit`
+
+```bash
+git reset --soft HEAD^
+```
+
+#### 回滚至指定版本
+
+```bash
+git reset --hard id
+```
+
+#### 撤销上次push
+
+```bash
+git push --force origin HEAD^:master
+```
+
+#### 撤销本地所有更改，并拉取远程最新代码
+
+```bash
+git fetch origin
+git reset --hard origin/<branch>
+```
+
+#### 漏掉某个文件的commit
+
+在提交完之后发现漏掉文件或者信息填写错误，可使用<font color = red> --amend </font>
+```c
+git commit --amend
+```
+
+#### 强制远程仓库回退至某个版本
+
+```bash
+git push --force origin <commit_hash>:<branch>
 ```
 
 ## 查看
@@ -177,6 +178,12 @@ git commit -m "first commit"
 git branch -M main
 git remote add origin <远程仓库地址>
 git push -u origin main
+```
+
+### 提交暂存区到仓库
+
+```git
+git commit -m [说明]
 ```
 
 ### 本地推送至远程已有仓库
