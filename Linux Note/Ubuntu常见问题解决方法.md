@@ -8,7 +8,7 @@
 
 ```bash
 # 先停止服务
-sudo service network-manager stop  
+sudo service network-manager stop
 # 删除文件
 sudo rm /var/lib/NetworkManager/NetworkManager.state
 # 修改文件
@@ -21,9 +21,7 @@ sudo service network-manager start
 
 ```bash
 sudo nmcli networking off
-
 sudo nmcli networking on
-
 sudo service network-manager restart
 ```
 
@@ -40,15 +38,11 @@ sudo apt-get install open-vm-tools-desktop
 
 [TheWhiteDog9487/ubuntu-language-onekey-zh_cn: 一键切换Ubuntu系统的终端语言到简体中文 (github.com)](https://github.com/TheWhiteDog9487/ubuntu-language-onekey-zh_cn)
 
-# 查看Ubuntu版本
+## 查看Ubuntu版本
 
 ```bash
-lsb_release
+$ lsb_release
 ```
-
-
-
-
 
 ## Ubuntu切CPU性能
 
@@ -148,6 +142,28 @@ network:
 ```bash
 sudo netplan apply
 ```
+
+## 更改网口名称
+
+```bash
+$ sudo vim /etc/default/grub
+```
+
+增加以下信息
+
+```bash
+GRUB_CMDLINE_LINUX="net.ifnames=0 biosdevname=0"
+```
+
+![image-20230919203530299](image/Ubuntu%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95/image-20230919203530299.png)
+
+更新grub
+
+```bash
+$ sudo update-grub
+```
+
+
 
 ## Ubuntu安装中文`man`手册
 

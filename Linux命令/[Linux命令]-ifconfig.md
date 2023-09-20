@@ -1,9 +1,19 @@
 # ifconfig
 
+## 显示网络设备信息（激活状态的）
+
+![image-20230919133206486](image/%5BLinux%E5%91%BD%E4%BB%A4%5D-ifconfig/image-20230919133206486.png)
+
 ## 设置IP和掩码
 
 ```bash
 $ ifconfig eth0 192.168.1.4 netmask 255.255.255.0
+```
+
+## 修改MAC地址
+
+```bash
+$ ifconfig eth0 hw ether 00:AA:BB:CC:dd:EE
 ```
 
 

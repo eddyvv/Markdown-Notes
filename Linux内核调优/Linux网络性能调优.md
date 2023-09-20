@@ -217,8 +217,6 @@ $ tc -s qdisc show dev ens33
 
 如果 `irqbalance` 没有运行，则 CPU 内核 0 通常会处理大多数中断。即使在负载中，这个 CPU 内核可能会变得忙碌，试图处理系统中所有硬件的工作负载。因此，可能会丢失或延迟中断或中断的工作。这可能导致网络和存储性能较低、数据包丢失和其他问题。
 
-
-
 # 参考
 
 [第 34 章 调整网络性能 Red Hat Enterprise Linux 8 | Red Hat Customer Portal](https://access.redhat.com/documentation/zh-cn/red_hat_enterprise_linux/8/html/monitoring_and_managing_system_status_and_performance/tuning-the-network-performance_monitoring-and-managing-system-status-and-performance)

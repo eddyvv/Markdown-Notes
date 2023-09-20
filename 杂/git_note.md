@@ -73,8 +73,6 @@ $ git branch -d d2000
 $ git push origin --delete d2000
 ```
 
-## 
-
 ### 撤销
 
 #### git push提交成功后撤销回退
@@ -344,3 +342,11 @@ git log --oneline | wc -l
 ### Failed to connect to github.com port 443:connection timed out
 
 解决办法[取消代理](#取消代理)
+
+
+
+# 参考
+
+[Git Cheat Sheet (igevin.info)](https://blog.igevin.info/posts/git-cheat-sheet/)
+
+[45 个 Git 经典操作场景，助你一臂之力 (qq.com)](https://mp.weixin.qq.com/s/lRtWN2dqP2GcaZWGLCZC6Q)
