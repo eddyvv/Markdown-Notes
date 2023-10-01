@@ -116,7 +116,7 @@ sftp> get -r /home/test F:/test
 sftp> put -r F:/msdia80.dll /home/
 ```
 
-## 更改IP地址
+## 配置静态IP地址
 
 ```bash
 $ sudo vi /etc/netplan/00-installer-config.yaml
@@ -129,10 +129,10 @@ network:
   version: 2
   renderer: networkd
   ethernets:
-    eno1:
-     dhcp4: no
-     addresses: [192.168.1.2/24]#ip地址
-     gateway4: 192.168.1.1#网关
+    ens33:
+     dhcp4: false
+     addresses: [192.168.1.2/24]	#ip地址
+     gateway4: 192.168.1.1			#网关
      nameservers:
        addresses: [114.114.114.114]
 ```
@@ -143,7 +143,9 @@ network:
 sudo netplan apply
 ```
 
-## 更改网口名称
+
+
+## 更改网口名称为eth0
 
 ```bash
 $ sudo vim /etc/default/grub
