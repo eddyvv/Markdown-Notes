@@ -343,6 +343,12 @@ git log --oneline | wc -l
 
 解决办法[取消代理](#取消代理)
 
+### git查看文件状态显示为数字
+
+```bash
+git config --global core.quotepath false
+```
+
 
 
 # 参考
