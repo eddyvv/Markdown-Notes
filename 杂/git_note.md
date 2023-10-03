@@ -165,6 +165,24 @@ git log -p -2
 
 `-2`可修改数字，查看最近几次的提交记录。
 
+### 查看代码行数
+
+```bash
+# 查看每个文件的代码行数
+git ls-files | xargs wc -l
+
+# 查看总代码行数
+git ls-files | xargs cat | wc -l
+```
+
+### 查看仓库文件
+
+```bash
+git ls-files
+```
+
+
+
 ## 推送
 
 ### 本地推送至远程仓库新仓库
