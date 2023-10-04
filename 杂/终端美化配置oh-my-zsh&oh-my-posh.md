@@ -12,6 +12,14 @@
 
 ![image-20230928151009511](image/%E7%BB%88%E7%AB%AF%E7%BE%8E%E5%8C%96%E9%85%8D%E7%BD%AEoh-my-zsh&oh-my-posh/image-20230928151009511.png)
 
+### [jonathan](https://github.com/ohmyzsh/ohmyzsh/wiki/themes#jonathan)
+
+![image-20231003135555699](image/%E7%BB%88%E7%AB%AF%E7%BE%8E%E5%8C%96%E9%85%8D%E7%BD%AEoh-my-zsh&oh-my-posh/image-20231003135555699.png)
+
+### [re5et](https://github.com/ohmyzsh/ohmyzsh/wiki/themes#re5et)
+
+![image-20231003135859784](image/%E7%BB%88%E7%AB%AF%E7%BE%8E%E5%8C%96%E9%85%8D%E7%BD%AEoh-my-zsh&oh-my-posh/image-20231003135859784.png)
+
 # Windows配置on-my-posh
 
 配置文件地址
