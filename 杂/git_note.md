@@ -104,8 +104,12 @@ git push --force origin HEAD^:master
 #### 撤销本地所有更改，并拉取远程最新代码
 
 ```bash
+# 更新远程分支信息
 git fetch origin
 git reset --hard origin/<branch>
+
+# 或者
+git checkout .
 ```
 
 #### 漏掉某个文件的commit
@@ -150,7 +154,7 @@ git remote -v
 git rev-parse HEAD
 ```
 
-### 查看远程于本地文件更改
+### 查看远程与本地文件更改
 
 ```bash
 git diff --name-only
@@ -257,7 +261,11 @@ git stash apply
 git stash pop
 ```
 
+### 查看某个文件最后一次修改
 
+```bash
+git log -n 1 -- <file-path>
+```
 
 
 

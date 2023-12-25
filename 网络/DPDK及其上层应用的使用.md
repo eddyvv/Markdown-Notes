@@ -348,6 +348,8 @@ $ ./build/app/dpdktestpmd --log-level="pmd,net.mqnic.nint":8 --log-level=8
 
 [DPDK系列之二：pktgen-dpdk向testpmd发送数据的测试_cloudvtech的博客-CSDN博客](https://blog.csdn.net/cloudvtech/article/details/80359825)
 
+[NVIDIA BlueField-2 DPU 和 DPDK 开发入门指南 - NVIDIA 技术博客](https://developer.nvidia.com/zh-cn/blog/nvidia-bluefield-2-dpu-dpdk/)
+
 ## DPDK
 
 [DPDK Tools User Guides — Data Plane Development Kit 17.11.10 documentation](https://doc.dpdk.org/guides-17.11/tools/index.html)

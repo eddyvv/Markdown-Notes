@@ -11,4 +11,7 @@
 | Ctrl+w       | 删除光标位置的前一个单词     |
 | Ctrl+Shift+n | 打开一个新终端               |
 | Ctrl+y       | 粘贴Ctrl+u或ctrl+k剪切的内容 |
+| Alt+B        | 向后移动一个单词             |
+| Alt+F        | 向前移动一个单词             |
+|              |                              |
 

@@ -228,6 +228,52 @@ sudo vim /etc/default/grub
 sudo update-grub
 ```
 
+# ubuntu启动显示**grub resource>**
+
+## 1、先输入ls回车，查看显示的内容
+
+```bash
+(hd0) (hd0,msdos14) (hd0,msdos13) (hd0,msdos12)…
+```
+
+## 2、然后找出哪个盘安装了系统
+
+```bash
+ls (hd0,msdos2)//boot/grub
+ls (hd0,msdos1)/boot/grub
+```
+
+尝试所有的，直到返回内容不再是error: unknown filesystem.为止。
+
+## 3、找到了系统所在分区
+
+输入ls (hd0,msdos13)/boot/grub后出现了 i386-pc等一些文件或文件夹
+
+## 4、设置路径
+
+然后依次输入如下内容：
+
+```bash
+set		#查看当前配置
+set root=(hd0,msdos13)/boot/grub
+set prefix=(hd0,msdos13)/boot/grub
+insmod /boot/grub/normal.mod
+```
+
+## 5. 执行normal
+
+```bash
+normal
+```
+
+
+
 # 参考
 
 [Ubuntu网络 — Cloud Atlas 0.1 文档 (cloud-atlas.readthedocs.io)](https://cloud-atlas.readthedocs.io/zh_CN/latest/linux/ubuntu_linux/network/index.html)
+
+[开机启动遇到grub rescue（最快的方法）-CSDN博客](https://blog.csdn.net/shuaigezhou123/article/details/85400781)
+
+[Ubuntu开机出现grub rescue模式修复方法-CSDN博客](https://blog.csdn.net/wangtingyao1990/article/details/52368699)
+
+[Ubuntu 开机出现 grub rescue> 终端模式修复方法_尘封の冰河的技术博客_51CTO博客](https://blog.51cto.com/u_3516606/1334505)
