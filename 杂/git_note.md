@@ -214,6 +214,15 @@ git branch -M main
 git push -u origin main
 ```
 
+### 推送到新的分支
+
+```bash
+git branch -b new-branch
+git push origin new-branch
+```
+
+
+
 ### 修改commit信息
 
 ```bash

@@ -118,6 +118,8 @@ setpci -s <bdf number> COMMAND=0x0140 #写入
 
 # 标准配置空间头（0x00h~0x3Fh）
 
+##  Type 0/1 Common Configuration Space
+
 **标准配置空间头部包含了设备的基本信息和功能**，如设备的 Vendor ID、Device ID、Class Code、BAR (Base Address Register)、中断信息等。这些信息通常用于操作系统和设备驱动程序识别和配置设备，例如确定设备的驱动程序、分配资源、设置中断等等。标准配置空间头部的长度为 64 个字节，是固定的，不能被扩展。
 
 ![image-20230526144955984](image/PCIe%E5%9F%BA%E7%A1%80/image-20230526144955984.png)
@@ -126,11 +128,130 @@ setpci -s <bdf number> COMMAND=0x0140 #写入
 
 > 《PCI Express Technology 3.0.pdf》Software Compatibility Characteristics p50
 
-## Status Register (Offset 0x06h)
+### Vendor ID Register (Offset 00h)
+
+### <span id = "Device ID">Device ID Register (Offset 02h)</span>
+
+Vendor ID、Device ID这两个寄存器的值由 [PCI-SIG](https://pcisig.com/) 分配， 只读。 其中 Vendor ID 代表 PCI 设备的生产厂商， 而 Device ID 代表这个厂商所生产的具体设备。 
+
+### Command Register(Offset 04h)
+
+该寄存器为 PCI 设备的命令寄存器， 在初始化时， 其值为 0， 此时这个 PCI 设备除了能够接收配置请求总线事务之外， 不能接收任何存储器或者 I / O 请求。 系统软件需要合理设置该寄存器之后， 才能访问该设备的存储器或者 I / O 空间。 
+
+![image-20231227190716689](image/PCIe%E5%9F%BA%E7%A1%80/image-20231227190716689.png)
+
+| Bits  | 定义                                  | 描述                                                         | 属性 |
+| ----- | ------------------------------------- | ------------------------------------------------------------ | ---- |
+| 0     | I/O Space Enable                      | 该位表示 PCI 设备是否响应 I/O 请求， 为 1 时响应， 为 0 时不响应。 如果 PCI 设备支持I/O 地址空间， 系统软件会将该位置 1，复位值为 0。<br/>如果 Func 不支持 I/O 空间访问，则允许该位硬连线到0b。 | RW   |
+| 1     | Memory Space Enable                   | 该位表示 PCI 设备是否响应 Memory 请求， 为 1 时响应， 为 0 时不响应。 如果 PCI 设备支持 Memory 地址空间， 系统软件会将该位置 1。 复位值为 0。对于具有 Type 1 类型配置空间头的 Func ，该位控制对在其主侧上接收的存储器空间访问的响应。<br/>如果 Func 不支持存储器空间访问，则允许该位硬连线到0b。 | RW   |
+| 2     | Bus Master Enable                     | 该位表示 PCI 设备是否可以作为主设备， 为 1 时 PCI 设备可以作为主设备， 为 0 时不能。 复位值为 0。<br/>**具有 Type 0 配置空间标头的Func:**<br/>当该位被置位时，允许该函数发出 Memory 或 I/O 请求。<br/>当该位被清除时，不允许该函数发出任何 Memory 或 I/O 请求。<br/>**请注意**，由于MSI/MSI-X中断消息是带内内存写入，因此设置总线主<br/>启用位到 0b 也会禁用 MSI/MSI-X 中断消息。<br/>除 Memory 或 I/O 请求之外的请求不受该位控制。<br/>该位的默认值为0b。<br/>如果 Func 不生成 Memory 或 I/O 请求，则该位硬连线到0b。<br/>**具有 Type 1 配置空间标头的Func:**<br/>该位控制上游方向上的端口对 Memory 或 I/O 请求的转发。<br/>当该位是0b时，在根端口或交换机端口的下游侧接收的 Memory 或 I/O 请求必须被处理为不支持的请求 (UR)，并且对于非发布的请求，必须返回具有UR完成状态的完成。该位不影响上游或下游方向的完成转发。<br/>除 Memory 或 I/O 请求之外的请求的转发不受该位控制。<br/>该位的默认值为0b。 | RW   |
+| 3     | Special Cycle Enable                  | 该位表示 PCI 设备是否响应 Special 总线事务， 为 1 时响应， 为 0 时不响应。 PCI 设备可以使用 Special 总线事务， 将一些信息广播发送到多个目标设备， Specail 总线事务不能穿越 PCI 桥。 如果一个 PCI 设备需要将 Special 总线事务发送到 PCI 桥之下的总线时， 必须使用 Type 01h 配置周期。 PCI桥可以将 Type 01h 配置周期转换为 Special 周期， 该位的复位值为 0。 | RO   |
+| 4     | Memory Write and Invalidate           | 该位表示 PCI 设备是否支持 Memory Write and Invalidate 总线事务， 为 1时支持， 为 0 时不支持。 许多低端的 PCI 设备不支持这种总线事务。 该位对 PCIe 设备无意义。 | RO   |
+| 5     | VGA Palette Snoop                     | 其功能不适用于PCI Express，该位必须硬连线到 0b。             | RO   |
+| 6     | Parity Error Response                 | 复位值为 0。 该位为 1， 而且 PCI 设备在传送过程中出现奇偶校验错误时， PCI 设备将 PERR#信号设置为 1； 该位为 0 时， 即便出现奇偶检验错误， PCI 设备也仅会将 Status 寄存器的 [Detected Parity Error](Detected Parity Error) 位置 1。 | RW   |
+| 7     | IDSEL Stepping/Wait Cycle Control     | 其功能不适用于PCI Express，并且该位必须硬连线到0b。          | RO   |
+| 8     | SERR# Enable                          | 复位值为 0。 该位为 1， 而且 PCI 设备出现错误时， 将使用 SERR#信号， 将这个错误信息发送给 HOST 主桥， 为 0 时， 不能使用 SERR#信号。 | RW   |
+| 9     | Fast Back-to-Back Transactions Enable | 该位为 1 时， PCI 设备使用 Fast Back⁃to⁃Back （ 快速背靠背） 总线周期， 这种周期是一种提高传送效率的方法。 但并不是所有的 PCI 设备都支持 Fast Back⁃to⁃Back 传送周期。 该位的复位值为 0。<br/>其功能不适用于PCI Express，该位必须硬连线到0b。 | RO   |
+| 10    | Interrupt Disable                     | 复位值为 0。 该位为 1 时， PCI 设备不能通过 INTx 信号向 HOST 主桥提交中断请求， 为 0 时可以使用 INTx 信号提交中断请求。 当 PCI 设备使用 MSI 中断方式提交中断请求时， 该位将被置为 1。 | RW   |
+| 15:11 | Reserved                              | Reserved                                                     | -    |
+
+### Status Register (Offset 0x06h)
+
+该寄存器保存设备状态，绝大多数位为只读；
+
+![image-20240223104437210](image/PCIe%E5%9F%BA%E7%A1%80/image-20240223104437210.png)
+
+| Bits | 定义                                   | 描述                                                         | 属性 |
+| ---- | -------------------------------------- | ------------------------------------------------------------ | ---- |
+| 3    | Interrupt Status                       | 该位为 1 且 Command 寄存器的 Interrupt Disable 位为 0 时， 表示 PCI 设备已经使用 INTx 信号向处理器提交了中断请求。 在多数 PCI 设备中的 BAR 空间， 存在自定义的中断状态寄存器， 因此设备驱动程序很少使用该位判断 PCI 设备是否提交了中断请求。 | RO   |
+| 4    | Capabilities List                      | 该位为 1 时 Capability Pointer 寄存器中的值有效。            | RO   |
+| 5    | 66 MHz Capable                         | 66MHz Capability 位， 该位只读。 为 1 时表示此设备支持 66 MHz 的 PCI 总线。 | RO   |
+| 7    | Fast Back-to-Back Transactions Capable | 该位为 1 表示此设备支持快速背靠背总线周期。                  | RO   |
+| 8    | Master Data Parity Error               | PCI 总线的 PERR#信号有效时将置该位为 1； 当 PCI 总线出现数据传送错误时置此位为 1； 当 Command 寄存器的 Parity Error Response 位为 1 时， 此位为 1。 | RW1C |
+| 10:9 | DEVSEL Timing                          | 该字段为 0b00 时表示 PCI 设备为快速设备； 为 0b01 时表示 PCI 设备为中速设备；为 0b10 时表示 PCI 设备为慢速设备。快速设备要求 PCI 总线主设备置 FRAME# 信号有效的一个时钟周期后，置 DEVSEL#信号有效； 中速设备要求 PCI 总线主设备置 FRAME #信号有效的两个时钟周期后， 置 DEVSEL# 信号有效； 慢速设备要求 PCI 总线主设备置 FRAME# 信号有效的三个时钟周期后， 置 DEVSEL# 信号有效。 | RO   |
+| 11   | Signaled Target Abort                  | 该位由 PCI 目标设备设置， 当目标设备使用目标设备夭折 （ Target Abort） 时序， 结束当前总线周期时， PCI 设备将置该位为 1。 | RW1C |
+| 12   | Received Target Abort                  | 该位由 PCI 主设备设置， 当发生目标设备夭折时序时， 该位被置为 1。 | RW1C |
+| 13   | Received Master Abort                  | 该位由 PCI 主设备设置， 当发生主设备夭折时序， 该位被置为 1。 当以上几个 Abort 位有效时， 表示 PCI 总线的数据传送通路出现了较为严重的问题。 | RW1C |
+| 14   | Signaled System Error                  | 当设备置 SERR# 信号有效时， 该位被置 1。                     | RW1C |
+| 15   | Detected Parity Error                  | 当设备发现奇偶校验错时， 该位被置 1。                        | RW1C |
+
+### Revision ID Register (Offset 08h)
+
+Revision ID 寄存器记载PCI设备的版本号。该寄存器可以被认为是 [Device ID](#Device ID) 寄存器的扩展。
+
+### Class Code Register (Offset 09h)
+
+Class Code寄存器通常用来表示该设备类型。分为3个区域：基类、子类和编程接口。用于确定该功能的基本功能和功能更为明确的子类，以及在某些情况下的寄存器专用编程接口。具体的定义在 [PCI-SIG](https://zh.wikipedia.org/wiki/PCI-SIG) 发布的《PCI Code and ID Assignment Specification Revision 1.11.pdf》文件中。
+
+![image-20240223162810717](image/PCIe%E5%9F%BA%E7%A1%80/image-20240223162810717.png)
+
+| Bits  | 定义                  | 描述             | 属性 |
+| ----- | --------------------- | ---------------- | ---- |
+| 7:0   | Programming Interface | 定义基类中的子类 | RO   |
+| 15:8  | Sub-Class Code        | 定义基类中的子类 | RO   |
+| 23:16 | Base Class Code       | 定义该功能的基类 | RO   |
+
+### Cache Line Size Register (Offset 0Ch)
+
+该寄存器记录 HOST 处理器使用的 Cache 行长度。在PCI总线中和Cache相关的总线事务，如存储器写并无效和Cache多行读等总线事务需要使用这个寄存器。值得注意的是，该寄存器由系统软件设置，但是在PCI设备的运行过程中，只有其硬件逻辑才会使用该寄存器，比如PCI设备的硬件逻辑需要得知处理器系统Cache行的大小，才能进行存储器写并无效总线事务，单行读和多行读总线事务。
+
+如果PCI设备不支持与Cache相关的总线事务，系统软件可以不设置该寄存器，此时该寄存器为初始值0x00。对于PCIe设备，该寄存器的值无意义，因为PCIe设备在进行数据传送时，在其报文中含有一次数据传送的大小，PCIe总线控制器可以使用这个“大小”，判断数据区域与Cache行的对应关系。
+
+### Latency Timer Register (Offset 0Dh)
+
+在PCI总线中，多个设备共享同一条总线带宽。该寄存器用来控制PCI设备占用PCI总线的时间，当PCI设备获得总线使用权，并使能 Frame# 信号后，Latency Timer 寄存器将递减，当该寄存器归零后，该设备将使用超时机制停止对当前总线的使用。
+
+如果当前总线事务为 Memeory Write and Invalidate 时，需要保证对一个完整Cache行的操作结束后才能停止当前总线事务。对于多数PCI设备而言，该寄存器的值为32或者64，以保证一次突发传送的基本单位为一个Cache行。
+
+PCIe设备不需要使用该寄存器，该寄存器的值必须为0。因为PCIe总线的仲裁方法与PCI总线不同，使用的连接方法也与PCI总线不同。
+
+### Header Type Register (Offset 0Eh)
+
+系统软件需要使用该寄存器区分不同类型的PCI配置空间，该寄存器的初始化必须与PCI设备的实际情况对应，而且必须为一个合法值。
+
+![image-20240223165421106](image/PCIe%E5%9F%BA%E7%A1%80/image-20240223165421106.png)
+
+| Bits | 定义                  | 描述                                                         | 属性 |
+| ---- | --------------------- | ------------------------------------------------------------ | ---- |
+| 6:0  | Header Layout         | 表示当前配置空间的类型，为0表示该设备使用PCI Agent设备的配置空间，普通PCI设备都使用这种配置头；为1表示使用PCI桥的配置空间，PCI桥使用这种配置头；为2表示使用Cardbus桥片的配置空间。 | RO   |
+| 7    | Multi-Function Device | 为1表示当前PCI设备是多功能设备，为0表示为单功能设备。        | RO   |
+
+### BIST Register (Offset 0Fh)
+
+该寄存器用于BIST的控制和状态。不支持BIST的 Function 必须将寄存器硬连线到00h。
+BIST被调用的 Function 不能阻止 PCI Express 链路的正常操作。
+
+![image-20240223170053722](image/PCIe%E5%9F%BA%E7%A1%80/image-20240223170053722.png)
+
+| Bits | 定义            | 描述                                                         | 属性   |
+| ---- | --------------- | ------------------------------------------------------------ | ------ |
+| 3:0  | Completion Code | 此字段对最近测试的状态进行编码。值0000b表示 Func 已通过测试。非零值表示 Func 测试失败。功能特定的故障代码可以被编码在非零值中。此字段的值仅在设置了 BIST 功能且清除了 Start BIST 时才有意义。该字段的默认值为0000b。如果BIST可用，则此字段必须硬连线到0000b。 | RO     |
+| 6    | Start BIST      | 如果设置了 BIST 能力，则设置此位以调用 BIST。BIST 完成时，该 Func 重置该位。如果该位在设置后2秒未清除（BIST未完成），则允许软件使设备失效。将此位写入0b没有任何效果。<br/>如果BIST未设置，则此位必须硬接线至0b。 | RW/RO  |
+| 7    | BIST Capable    | 当设置时，此位表示 Func 支持BIST。清除时，函数不支持BIST。   | HWInit |
+
+### Capabilities Pointer (Offset 34h)
+
+该寄存器用于指向由该 Func 实现的能力的链表。由于需要所有 PCI Express 功能来实现 PCI 功率管理能力和 PCI Express 能力结构，因此这些结构必须被包括在链表中的某处; 该寄存器可以指向这些能力结构中的任一个或者指向由该功能实现的可选能力结构。底部两位被保留并且必须被设置为 00b。在使用该寄存器作为配置空间中指向新功能的链表的第一条目的指针之前，软件必须屏蔽这些位。具体使用实例见[PCI Capabilities List](#Capabilities List)。
+
+### Interrupt Line Register (Offset 3Ch)
+
+中断线寄存器传送中断线路由信息。寄存器是可读/可写的，并且必须由使用中断引脚的任何 Func 来实现 。该寄存器中的值由系统软件编程，并且是系统架构特定的。Func 本身不使用此值; 而是设备驱动程序和操作系统使用此寄存器中的值。
+
+### Interrupt Pin Register (Offset 3Dh)
+
+中断引脚寄存器是一个只读寄存器，用于标识函数使用的传统中断消息。有效值为01h、02h、03h和04h，分别映射到INTA、INTB、INTC和INTD的传统中断消息。值为00h表示该 Func 不使用传统中断消息。值05h至FFh被保留。
+
+PCI Express 为单个功能设备定义了一个传统中断消息，为多功能设备定义了多达四个传统中断消息。对于单功能装置，仅可使用INTA。
+
+多功能设备上的任何功能都可以使用任何INTx消息。如果设备实现单个传统中断消息，则它必须是INTA; 如果它实现两个传统中断消息，则它们必须是INTA和INTB; 等等。对于多功能设备，所有功能可以使用相同的INTx消息，或者每个功能可以具有其自己的 (最多四个功能) 或其任何组合。单个函数永远不能对多个INTx消息生成中断请求。
 
 
 
-## Base Address Registers (Offset 0x10h~0x27h)
+## Type 0 配置空间标头
+
+![image-20240229110532777](image/PCIe%E5%9F%BA%E7%A1%80/image-20240229110532777.png)
+
+### Base Address Registers (Offset 0x10h~0x27h)
 
 如下图所示：Type0 Header最多有6个BAR，而Type1 Header最多有两个BAR。这就意味着，对于Endpoint来说，最多可以拥有6个不同的地址空间。但是实际应用中基本上不会用到6个，通常1~3个BAR比较常见。
 
@@ -140,9 +261,7 @@ setpci -s <bdf number> COMMAND=0x0140 #写入
 
 若某个设备的BAR没有被全部使用，则对应的BAR应被硬件全部设置为0，并且告知软件这些BAR是不可操作的。一旦BAR的值确定了（Have been programmed），其指定范围内的当前设备中的内部寄存器（或内部存储空间）就可以被访问了。当该设备确认某一个请求（Request）中的地址在自己的BAR的范围内，便会接受这请求。
 
-
-
-### 32位Non‐Prefetchable Memory地址空间请求
+#### 32位Non‐Prefetchable Memory地址空间请求
 
 ![image-20230526161548097](image/PCIe%E5%9F%BA%E7%A1%80/image-20230526161548097.png)
 
@@ -169,7 +288,7 @@ setpci -s <bdf number> COMMAND=0x0140 #写入
 | 11:4     | 读取为全0，表示请求的大小（这些位是硬编码为0的）。           |
 | 31:12    | 读取为全1，因为软件尚未使用起始地址编程BAR的上位位。由于第12位是可写的最低有效位，请求的内存大小为2^12 = 4KB。 |
 
-### 64位 Prefetchable Memory地址空间
+#### 64位 Prefetchable Memory地址空间
 
 ![image-20230526164524101](image/PCIe%E5%9F%BA%E7%A1%80/image-20230526164524101.png)
 
@@ -196,7 +315,7 @@ setpci -s <bdf number> COMMAND=0x0140 #写入
 | 低   | 31：26   | 读取为全1，因为软件还未将配置的内存地址写入BAR。此处还表示内存地址空间请求的大小为2^26=64MB。 |
 | 高   | 31：0    | 读取为全1，这些位将在系统软件写入分配的内存地址的高32位而改变。 |
 
-### IO地址空间请求
+#### IO地址空间请求
 
 ![image-20230527144317426](image/PCIe%E5%9F%BA%E7%A1%80/image-20230527144317426.png)
 
@@ -221,6 +340,39 @@ setpci -s <bdf number> COMMAND=0x0140 #写入
 | 7:2      | 读为0b，表示请求的大小                                       |
 | 31:8     | 读为全1，当软件写入分配的系统内存地址空间值后改变，由于最低位为8，所以IO请求的大小为2^8=64MB |
 
+### Cardbus CIS Pointer Register (Offset 28h)
+
+该寄存器最初在 [PC-Card]([https://en.wikipedia.org/wiki/PC_Card) 中描述。其功能不适用于PCI Express。它必须是只读和硬连线到0000 0000h。
+
+### Subsystem Vendor ID Register/Subsystem ID Register (Offset 2Ch/2Eh)
+
+Subsystem Vendor ID 和 Subsystem ID 寄存器用于唯一地标识 pciexpress组件所在的适配器或子系统。它们为供应商提供了一种机制，即使组件上可能具有相同的 PCI Express 组件 (因此具有相同的供应商ID和设备ID)，也可以将其产品彼此区分开来。
+
+### Expansion ROM Base Address Register (Offset 30h)
+
+某些功能，尤其是用于附加卡的功能，需要本地 EPROMs 来扩展 ROM。该寄存器被定义为处理该扩展ROM的基地址和大小信息。
+
+![image-20240229104444191](image/PCIe%E5%9F%BA%E7%A1%80/image-20240229104444191.png)
+
+| Bits  | 定义                             | 描述                                                         | 属性       |
+| ----- | -------------------------------- | ------------------------------------------------------------ | ---------- |
+| 0     | Expansion ROM Enable             | 该位控制该 Func 是否通过扩展 ROM 基地址寄存器接受对其扩展ROM的访问。 | RO/RW      |
+| 3:1   | Expansion ROM Validation Status  | 扩展ROM验证是可选的。当该字段为非零时，它指示扩展ROM内容的硬件验证的状态。 | HwInit/ROS |
+| 7:4   | Expansion ROM Validation Details | 包含与扩展ROM验证相关的可选的、特定于实现的详细信息。        | HwInit/ROS |
+| 31:11 | Expansion ROM Base Address       | 包含扩展ROM的起始存储器地址的高位21位。扩展ROM基地址寄存器的低11位被软件屏蔽 (设置为零) 以形成32位地址。 | RW/RO      |
+
+### Min_Gnt Register/Max_Lat Register (Offset 3Eh/3Fh)
+
+这些寄存器不适用于PCI Express。它们必须是只读的，并且硬连线到00h。
+
+## Type 1 配置空间标头
+
+
+
+
+
+
+
 # 标准PCI Express Capbility结构（0x40h~0xFFh）
 
 PCI-X 和PCIe 总线规范要求其设备必须支持Capabilities 结构。在PCI 总线的基本配置空间中，包含一个Capabilities Pointer 寄存器，该寄存器存放Capabilities 结构链表的头指针。在一个PCIe 设备中，可能含有多个Capability 结构，这些寄存器组成一个链表。
@@ -235,7 +387,7 @@ PCI-X 和PCIe 总线规范要求其设备必须支持Capabilities 结构。在PC
 
 > 《PCI Express® Base Specification Revision 5.0.pdf》7.5.3 PCI Express Capability Structure p719
 
-## PCI Capabilities List<a name="Capabilities List"/>
+## <span id = "Capabilities List">PCI Capabilities List</span>
 
 其中每一个Capability 结构都有唯一的ID 号，每一个Capability 寄存器都有一个指针，这个指针指向下一个Capability 结构，从而组成一个单向链表结构，这个链表的最后一个Capability 结构的指针为0。链表开始的指针地址为0x34处的1byte数值，寻址过程如下:
 
