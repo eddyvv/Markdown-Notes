@@ -16,3 +16,9 @@ shutdown -a
 wsl --shutdown
 ```
 
+# 查看MD5
+
+```bash
+certUtil -hashfile <filename> MD5
+```
+

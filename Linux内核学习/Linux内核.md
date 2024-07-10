@@ -205,7 +205,7 @@ sudo vi /etc/default/grub
 
 ```bash
 #GRUB_TIMEOUT_STYLE=hidden
-GRUB_TIMEOUT=10
+GRUB_TIMEOUT=10 
 ```
 
 更新

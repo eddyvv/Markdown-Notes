@@ -255,9 +255,9 @@ ls (hd0,msdos1)/boot/grub
 
 ```bash
 set		#查看当前配置
-set root=(hd0,msdos13)/boot/grub
+set root=(hd0,msdos13)
 set prefix=(hd0,msdos13)/boot/grub
-insmod /boot/grub/normal.mod
+insmod normal
 ```
 
 ## 5. 执行normal
@@ -265,6 +265,57 @@ insmod /boot/grub/normal.mod
 ```bash
 normal
 ```
+
+# UDP丢包大，修改接收缓存方法
+
+```bash
+sysctl -w net.core.rmem_max=20097152
+sysctl -w net.core.wmem_max=20097152
+sysctl -w net.core.wmem_default=20097152
+sysctl -w net.core.rmem_default=20097152
+sysctl -p
+```
+
+# 配置固定ip
+
+## 方法1
+
+命令行执行
+
+```bash
+nmcli con show
+
+nmcli con modify Wired\ connection\ 3  con-name eth1
+nmcli con modify eth1 ipv4.addresses 192.168.9.11/24
+nmcli con modify eth1 ipv4.gateway 192.168.9.1
+nmcli con modify eth1 ipv4.method manual
+nmcli con down ethl
+nmcli con up eth1
+```
+
+## 方法2
+
+```bash
+cd /etc/sysconfig/network-scripts/
+mkdir ifcfg-enp1s0f1
+
+vim ifcfg-enp1s0f1
+
+
+#键入
+TYPE=Ethernet
+BOOTPROTO=static
+ONBOOT=yes
+IPADDR=192.168.3.100
+NETMASK=255.255.255.0
+GATEWAY=192.168.3.1
+
+source /etc/sysconfig/network-scripts/ipcfg-eth0
+```
+
+
+
+
 
 
 

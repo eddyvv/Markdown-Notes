@@ -21,13 +21,15 @@ insmod	加载模块(*.mod)
 逐一尝试`gpt0`和`gpt6`，直到找到正确boot分区的设备，那么此时正确的root变量设置好了，就得设置正确的`prefix`变量
 
 ```bash
+set		#查看当前配置
+set root=(hd0,msdos6)
 set prefix=(hd0,msdos6)/boot/grub
 ```
 
 ### 加载`normal.mod`模块
 
 ```bash
-insmod /boot/grub/arm64-efi/normal.mod
+insmod normal.mod
 ```
 
 ### 进入正常的GRUB2界面
@@ -35,6 +37,12 @@ insmod /boot/grub/arm64-efi/normal.mod
 ```bash
 normal
 ```
+
+## error:symbol 'grub_calloc' not found
+
+### 解决方法
+
+重启进入BIOS，选择允许UEFI启动，并将安全启动（Secure Boot）关闭，保存退出，重新引导。
 
 # 参考
 
