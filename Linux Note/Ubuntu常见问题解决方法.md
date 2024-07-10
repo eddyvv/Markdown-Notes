@@ -25,6 +25,14 @@ sudo nmcli networking on
 sudo service network-manager restart
 ```
 
+## ubuntu网络显示未托管
+
+```bash
+1、修改/etc/NetworkManager/NetworkManager.conf，将managed=false改为managed=true
+2、修改/usr/lib/NetworkManager/conf.d/10-globally-managed-devices.conf，在行末加上,except:type:ethernet
+3、重启NetworkManager  sudo restart NetworkManager
+```
+
 
 
 ## Ubuntu安装VM-Tools
@@ -141,6 +149,15 @@ network:
 
 ```bash
 sudo netplan apply
+```
+
+## 单网口多ip
+
+参考[](https://blog.csdn.net/xiamofusheng/article/details/107605172)
+
+```bash
+sudo ifconfig ens3f0np0:0 11.5.225.111 up
+sudo ifconfig ens6f1np1 10.5.226.111
 ```
 
 
@@ -311,6 +328,16 @@ NETMASK=255.255.255.0
 GATEWAY=192.168.3.1
 
 source /etc/sysconfig/network-scripts/ipcfg-eth0
+```
+
+# ubuntu安装vscode
+
+```bash
+sudo apt update
+sudo apt install software-properties-common apt-transport-https wget
+wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"
+sudo apt install code
 ```
 
 
