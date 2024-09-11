@@ -16,6 +16,20 @@ $ ifconfig eth0 192.168.1.4 netmask 255.255.255.0
 $ ifconfig eth0 hw ether 00:AA:BB:CC:dd:EE
 ```
 
+## 启用混杂模式
+
+混杂允许网络接口访问和查看网络中的所有数据包。您可以使用该ifconfig命令在特定网络设备上启用和禁用混杂。
+
+```bash
+$ ifconfig eth0 promisc
+```
+
+## 禁用混杂模式
+
+```bash
+$ ifconfig eth0 -promisc
+```
+
 
 
 

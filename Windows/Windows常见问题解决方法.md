@@ -28,10 +28,6 @@ Windows Registry Editor Version 5.00
 
 将vmware安装位置配置为默认的C盘。
 
-
-
-
-
 # Windows Terminal
 
 [消除WSL中ls Windows文件夹时背光配色的方法_wsl字体颜色_天色微凉的博客-CSDN博客](https://blog.csdn.net/qq_33882435/article/details/116264702)
@@ -41,3 +37,38 @@ Windows Registry Editor Version 5.00
 # 禁用驱动程序强制签名
 
 打开设置（win+i）->更新和安全->恢复->高级启动->立即重新启动->疑难解答->高级选项->启动设置->重启->根据提示输入`7`禁用驱动程序强制签名
+
+# 添加VSCode至鼠标右键
+
+新建文件键入如下内容
+
+```cmd
+Windows Registry Editor Version 5.00
+
+[HKEY_CLASSES_ROOT\*\shell\VSCode]
+@="Open with Code"
+"Icon"="D:\\VScode\\Microsoft VS Code\\Code.exe"
+
+[HKEY_CLASSES_ROOT\*\shell\VSCode\command]
+@="\"D:\\VScode\\Microsoft VS Code\\Code.exe\" \"%1\""
+
+Windows Registry Editor Version 5.00
+
+[HKEY_CLASSES_ROOT\Directory\shell\VSCode]
+@="Open with Code"
+"Icon"="D:\\VScode\\Microsoft VS Code\\Code.exe"
+
+[HKEY_CLASSES_ROOT\Directory\shell\VSCode\command]
+@="\"D:\\VScode\\Microsoft VS Code\\Code.exe\" \"%V\""
+
+Windows Registry Editor Version 5.00
+
+[HKEY_CLASSES_ROOT\Directory\Background\shell\VSCode]
+@="Open with Code"
+"Icon"="D:\\VScode\\Microsoft VS Code\\Code.exe"
+
+[HKEY_CLASSES_ROOT\Directory\Background\shell\VSCode\command]
+@="\"D:\\VScode\\Microsoft VS Code\\Code.exe\" \"%V\""
+```
+
+将上述文件内容的目录替换为本机VSCode安装目录，之后将文本文件后缀改为`.reg`后执行该文件。

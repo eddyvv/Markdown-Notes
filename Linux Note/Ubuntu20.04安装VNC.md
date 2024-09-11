@@ -44,7 +44,7 @@ sudo apt-get install gnome-panel
 vncserver
 ```
 
-配置xstartup
+配置`xstartup`
 
 ```bash
 cd ~/.vnc

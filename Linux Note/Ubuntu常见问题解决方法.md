@@ -1,10 +1,6 @@
 # Ubuntu常见问题解决方法
 
-
-
 ## Ubuntu只显示本地环回无法连接宿主机
-
-
 
 ```bash
 # 先停止服务
@@ -27,13 +23,11 @@ sudo service network-manager restart
 
 ## ubuntu网络显示未托管
 
-```bash
-1、修改/etc/NetworkManager/NetworkManager.conf，将managed=false改为managed=true
-2、修改/usr/lib/NetworkManager/conf.d/10-globally-managed-devices.conf，在行末加上,except:type:ethernet
-3、重启NetworkManager  sudo restart NetworkManager
-```
+1、修改`/etc/NetworkManager/NetworkManager.conf`，将`managed=false`改为`managed=true`;
 
+2、修改`/usr/lib/NetworkManager/conf.d/10-globally-managed-devices.conf`，在行末加上`,except:type:ethernet`;
 
+3、重启`NetworkManager` 执行`sudo restart NetworkManager`。
 
 ## Ubuntu安装VM-Tools
 
@@ -245,7 +239,7 @@ sudo vim /etc/default/grub
 sudo update-grub
 ```
 
-# ubuntu启动显示**grub resource>**
+# Ubuntu启动显示**grub resource>**
 
 ## 1、先输入ls回车，查看显示的内容
 
@@ -330,7 +324,7 @@ GATEWAY=192.168.3.1
 source /etc/sysconfig/network-scripts/ipcfg-eth0
 ```
 
-# ubuntu安装vscode
+# Ubuntu安装vscode
 
 ```bash
 sudo apt update
@@ -338,6 +332,13 @@ sudo apt install software-properties-common apt-transport-https wget
 wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | sudo apt-key add -
 sudo add-apt-repository "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"
 sudo apt install code
+```
+
+# Ubuntu查看硬盘序列号
+
+```bash
+sudo fdisk -l	#列出全部硬盘
+lsblk -n --nodeps -o name,serial /dev/nvme0n1	# 查看序列号
 ```
 
 
