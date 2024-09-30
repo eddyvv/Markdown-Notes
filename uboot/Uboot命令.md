@@ -522,30 +522,6 @@ Pattern FFFFFFFF Writing... Reading...Iteration: 7885
 
 上述测试中测试内存范围为0x80000000~0x80001000，已经测试7885次，可通过“Ctrl+C”键结束测试。
 
-## NAND Flash操作
-
-nand erase
-
-nand write
-
-nand read
-
-## NOR Flash操作
-
-sf probe
-
-sf read
-
-sf write
-
-sf erase
-
-sf update
-
-sf protect
-
-sf test
-
 ## 网络操作
 
 ### ping
@@ -607,8 +583,6 @@ Bytes transferred = 18433 (4801 hex)
 
 ### nfs
 
-
-
 ```bash
 nfs [loadAddress] [[hostIPaddr:]bootfilename]
 
@@ -623,6 +597,269 @@ nfs 80800000 192.168.0.108:/home/eddy/nfs/zImage
 ```
 
 命令中的 “ 80800000 ” 表 示 zImage 保 存 地 址 ，“192.168.0.108:/home/eddy/nfs/zImage”表示 zImage 在 192.168.0.108 这个主机的位置。
+
+## NAND Flash操作
+
+### nand info
+
+nand info命令用于查看NAND Flash信息，通常会给出NAND Flash的页大小、OOB域大小、擦除大小等信息。
+
+```bash
+# nand info
+Device 0: NAND 32MiB 3,3V 8-bit, sector size 16 KiB
+```
+
+### nand device
+
+nand device命令用于查看当前NAND设备信息或切换当前的NAND设备。
+
+```bash
+nand device [dev]
+```
+
+### nand erase
+
+nand erase 命令用于擦除 NAND Flash，NAND Flash 的特性决定了在向 NAND Flash 写数据之前一定要先对要写入的区域进行擦除。
+
+```bash
+nand erase off|partition size
+nand erase clean [off|partition size]
+```
+
+示例：
+
+```bash
+# nand erase 0x0 0x20000	#从0地址擦除0x20000个字节
+
+NAND erase: device 0 offset 0x0, size 0x20000
+Erasing at 0x0 -- 100% complete.
+OK
+```
+
+`erase`命令从偏移量"`offset`"开始擦除`“size”`字节。或者分区（partition）可以指定名称，在这种情况下，大小最终会受到限制，需要不超过分区大小（此行为也适用于读取和写入命令）。只能擦除完整的NAND块。
+
+如果指定了“`erase`”而没有偏移量或大小，则整个闪存被擦除。如果“`erase`”指定了分区（partition）但没有分区大小，整个分区被擦除。
+
+如果指定了“`clean`”，则将JFFS2样式的擦除标记写入擦除后的每个块。
+
+此命令不会擦除标记为错误的块。
+
+### nand erase.part
+
+擦除指定的分区
+
+```bash
+nand erase.part [clean] partition
+```
+
+### nand erase.chip
+
+全片擦除
+
+```bash
+nand erase.chip [clean]
+```
+
+### nand read
+
+从NAND闪存中的 '`ofs`' 读取 '`size`' 字节到 '`addr`'。标记为 “坏” 的块将被跳过。如果由于发现不可纠正的数据错误而无法读取页，则命令会因错误而停止。
+
+```bash
+nand read addr ofs|partition size
+```
+
+示例：
+
+```bash
+# nand read 86000000 58000 100
+NAND read: device 0 offset 0x58000, size 0x100
+ 256 bytes read: OK
+```
+
+### nand read.raw
+
+nand read.raw命令用于在 NAND 闪存中将页面从‘ `ofs`’地址读取到‘`addr`’。这会读取原始页面，因此可以避免 ECC，也可以读取 OOB 区域。
+
+```bash
+nand read.raw addr ofs|partition
+```
+
+### nand read.oob
+
+nand read.oob命令用于从对应于NAND闪存中的 '`ofs`' 的带外数据区域读取 '`size`' 字节到 '`addr`'。仅限于一个512字节页面或2个256字节页面的16字节数据。此命令不检查坏块或更正错误。
+
+```bash
+nand read.oob addr ofs|partition size
+```
+
+示例：
+
+```bash
+# nand read.oob 86000000 58000 10
+NAND read: device 0 offset 0x58000, size 0x10
+ 16 bytes read: OK
+```
+
+### nand write
+
+nand write用于在 NAND flash 中将‘`size`’字节的数据从‘`addr`’写到‘`off`’。
+
+```bash
+nand write addr ofs|partition size
+```
+
+被标记为坏的块将被跳过。如果由于发现不可纠正的数据错误而无法读取页，则该命令将以错误停止。
+
+### nand write.raw
+
+nand write.raw命令用于在 NAND 闪存中将页面从'`addr`'写到'`ofs`'。这将写入原始页面，因此可以避免 ECC，并且也可以写入 OOB 区域，从而使整个页面按原样写入。
+
+```bash
+nand write.raw addr ofs|partition
+```
+
+### nand write.trimffs
+
+命令由CONFIG_CMD_NAND_TRIMFFS宏启用，此命令将以与上面描述的“ NAND write”命令相同的方式写入 NAND 闪存，附加检查，确保擦除块末尾所有只包含0xff 数据的页面不会写入 NAND 闪存。
+
+```bash
+nand write.trimffs addr ofs|partition size
+```
+
+### nand write.oob
+
+nand write.oob命令用于在 NAND Flash 中将'`size`'字节从'`addr`'写入对应于'`off`'的带外数据区域。这仅限于一个512字节页或2个256字节页的16字节数据。不检查坏块。
+
+```bash
+nand write.oob addr ofs|partition size
+```
+
+示例：
+
+```bash
+# nand write.oob 86000000 1cc000 10
+NAND write: device 0 offset 0x1cc000, size 0x10
+ 16 bytes written: OK
+```
+
+### nand bad
+
+nand bad用于打印当前设备中所有坏块的列表。
+
+```bash
+nand bad
+```
+
+### nand dump
+
+nand dump命令用于显示Nand Flash中的数据（16进制）
+
+```bash
+nand dump[.oob] off
+```
+
+示例：
+
+```bash
+# nand dump 1cc000 10
+Page 001cc000 dump:
+       68 73 71 73 12 05 00 00  87 04 08 78 19 00 40 02
+       …………
+       df 88 5b 80 bb 11 32 11  6e e7 77 5a 3d b9 c8 bf
+OOB:
+       ff ff ff ff ff ff ff 45
+       ed cc 3a e0 8e 52 f9 ad
+```
+
+### nand scrub
+
+nand scrub命令用于彻底擦除整块Nand Flash中的数据，包括OOB。可以擦除软件坏块标志，此操作是不安全的。
+
+```bash
+nand scrub [-y] off size | scrub.part partition | scrub.chip
+```
+
+### nand markbad
+
+nand markbad命令用于标记Nand的 off 偏移地址处的块为坏块，此操作是不安全的。
+
+```bash
+nand markbad off [...]
+```
+
+### nand lock
+
+将nand设置为锁定状态或显示锁定的页面。
+
+```bash
+nand lock [tight] [status]
+```
+
+示例：
+
+```bash
+# nand lock			#将NAND芯片设置为锁定状态（所有页面锁定）
+# nand lock tight	#设置NAND芯片锁紧状态(软件无法更改锁定)
+# nand lock status	#显示所有页面的当前锁定状态
+```
+
+### nand unlock
+
+```bash
+nand unlock [offset] [size]				#解锁连续区域（不同区域可多次调用）
+nand unlock[.allexcept] [offset] [size]	#解锁除指定连续区域外的所有区域
+```
+
+## NOR Flash操作
+
+### flinfo
+
+flinfo命令打印全部Flash组的信息，也可以只打印其中某个组。
+
+```bash
+flinfo
+flinfo N	# 单独打Flash存储器N Block的信息。（在有多块Nor Flash时使用）
+```
+
+示例：
+
+```bash
+# flinfo 1
+
+
+Bank # 1: SST: 1x SST39VF1601 (2MB)
+Size: 2 MB in 32 Sectors
+Sector Start Addresses:
+00000000 (RO) 00010000 (RO) 00020000 (RO) 00030000 (RO) 00040000
+00050000 00060000 (RO) 00070000 (RO) 00080000 00090000
+000A0000 000B0000 000C0000 000D0000 000E0000
+000F0000 00100000 00110000 00120000 00130000
+00140000 00150000 00160000 00170000 00180000
+00190000 001A0000 001B0000 001C0000 001D0000
+001E0000 001F0000
+```
+
+### 擦除操作
+
+
+
+### 写保护操作
+
+## QSPI Flash操作
+
+sf probe
+
+sf read
+
+sf write
+
+sf erase
+
+sf update
+
+sf protect
+
+sf test
 
 ## mmc命令
 
@@ -818,7 +1055,7 @@ crc32
 
 ### dcache
 
-dcache命令用于启用或禁用数据（写通）缓存
+dcache命令用于启用或禁用数据（写通）缓存。
 
 ```bash
 dcache [on/off]
@@ -826,17 +1063,15 @@ dcache [on/off]
 
 ### icache
 
-icache命令用于查看、修改instruction cache的状态
+icache命令用于启用或禁用指令缓存。
 
 ```bash
 icache [on/off]
 ```
 
-
-
 # 参考
 
-[Use U-Boot — Das U-Boot unknown version documentation](https://docs.u-boot.org/en/latest/usage/index.html)
+[Use U-Boot — Das U-Boot unknown version documentation](https://docs.u-boot.org/en/latest/usage/index.html) uboot手册。
 
 [U-Boot命令之网络操作命令_setenv ethaddr-CSDN博客](https://blog.csdn.net/weixin_45309916/article/details/109178659)
 
@@ -853,3 +1088,14 @@ icache [on/off]
 [uboot常用命令总结 - 腾讯云开发者社区-腾讯云 (tencent.com)](https://cloud.tencent.com/developer/news/1230322)
 
 [U-Boot的常用命令详解 - 怀想天空2013 - 博客园 (cnblogs.com)](https://www.cnblogs.com/cyyljw/p/11126310.html)
+
+[uboot常用命令详解 - 一本书的伤痕 - 博客园 (cnblogs.com)](https://www.cnblogs.com/shangbolei/p/4376115.html)
+
+[U-BOOT中文文档 (2) 配置选项(1)-kaifeng_cu-ChinaUnix博客](http://blog.chinaunix.net/uid-20774803-id-3001423.html)
+
+[U-BOOT中文文档 (2) 配置选项(2)-kaifeng_cu-ChinaUnix博客](http://blog.chinaunix.net/uid-20774803-id-3001424.html)
+
+[U-BOOT中文文档 (2) 配置选项(3)-kaifeng_cu-ChinaUnix博客](http://blog.chinaunix.net/uid-20774803-id-3001425.html)
+
+
+
