@@ -143,9 +143,9 @@ x<sup>2</sup>+y<sup>2</sup>
 ```markdown
 ```
 
+# 跳转
 
-
-# <span id="jump">文章内跳转</span>
+## <span id="jump">文章内跳转</span>
 
 1. 定义一个锚点 ` <span id="jump">跳转到的地方</span>`
 2. 跳转语法 ` [点击跳转`](#jump)
@@ -153,6 +153,24 @@ x<sup>2</sup>+y<sup>2</sup>
 示例：
 
 跳转至[文章内跳转](#jump)
+
+## 文章间跳转
+
+### md写法
+
+[跳转至git_note](./git_note.md#撤销与删除)
+
+```html
+[跳转至gitnote](./git_note,md#撤销与删除)
+```
+
+### html写法
+
+```md
+<a href="https://github.com/BackMountainDevil/The-C-Programming-Language#the-c-programming-language">返回目录</a>
+```
+
+<a href="https://github.com/BackMountainDevil/The-C-Programming-Language#the-c-programming-language">The-C-Programming-Language</a>
 
 # 单元格合并
 

@@ -179,7 +179,7 @@ bdinfo命令用于查看当前开发板的信息。
 
 version 命令用于查看 uboot 的版本号。
 
-![version](image/Uboot%E5%91%BD%E4%BB%A4/96a5b030b658bfffc69ea156a5cb6068.jpg)
+![version](image/uboot%E5%91%BD%E4%BB%A4/96a5b030b658bfffc69ea156a5cb6068.jpg)
 
 ## BOOT操作
 
@@ -879,6 +879,8 @@ mmc part
 
 ## pci命令
 
+在使用pci命令之前，需要确保U-Boot启用了PCI支持。这通常通过在编译U-Boot时启用`CONFIG_CMD_PCI`配置选项来实现。
+
 ### pci
 
 pci命令用于显示pci总线bus上PCI设备的短或长列表
@@ -895,9 +897,37 @@ _____________________________________________________________
 
 探测系统中的 PCI 设备，并打印出所有找到的设备的信息。
 
+```bash
+# pci probe
+Scanning PCI devices on bus 0
+BusDevFun  VendorId   DeviceId   Device Class       Sub-Class
+_____________________________________________________________
+00.00.00   0x17cd     0xdc16     Bridge device           0x04
+00.01.00   0x17cd     0xdc08     Bridge device           0x04
+00.02.00   0x17cd     0xdc01     Bridge device           0x04
+00.03.00   0x17cd     0xdc16     Bridge device           0x04
+00.04.00   0x17cd     0xdc08     Bridge device           0x04
+00.05.00   0x17cd     0xdc01     Bridge device           0x04
+```
+
+
+
 ### pci info
 
 显示当前系统中所有 PCI 设备的信息，包括设备地址、设备 ID、厂商 ID 等。
+
+```bash
+# pci info
+Scanning PCI devices on bus 0
+BusDevFun  VendorId   DeviceId   Device Class       Sub-Class
+_____________________________________________________________
+00.00.00   0x17cd     0xdc16     Bridge device           0x04
+00.01.00   0x17cd     0xdc08     Bridge device           0x04
+00.02.00   0x17cd     0xdc01     Bridge device           0x04
+00.03.00   0x17cd     0xdc16     Bridge device           0x04
+00.04.00   0x17cd     0xdc08     Bridge device           0x04
+00.05.00   0x17cd     0xdc01     Bridge device           0x04
+```
 
 ### pci header
 
@@ -967,19 +997,23 @@ pci modify
 
 从指定的 PCI 设备上读取数据，需要指定设备地址、偏移地址、数据类型和数据长度。
 
+```bash
+# pci read <bus.dev.func> <offset> <data-type> <data-length>
+```
+
 ### pci write
 
 向指定的 PCI 设备上写入数据，需要指定设备地址、偏移地址、数据类型和数据长度。
+
+```bash
+# pci write <bus.dev.func> <offset> <data-type> <data-length>
+```
 
 ### pci enum
 
 重新枚举系统中的所有 PCI 设备，并打印出找到的设备的信息。
 
 ### pci regions
-
-
-
-
 
 <font color=red>**注意**</font>：使用 pci 命令需要先启用 CONFIG_CMD_PCI 配置选项。
 

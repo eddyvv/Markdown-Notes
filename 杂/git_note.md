@@ -276,6 +276,51 @@ git stash pop
 git log -n 1 -- <file-path>
 ```
 
+## 分支
+
+### 将当前修改的内容提交到新的分支上
+
+```bash
+#步骤1：在当前的develop分支上的修改暂存起来
+git stash
+#步骤2：暂存修改后，在本地新建分支（develop_backup为新分支的名字）
+git checkout -b develop_backup
+#步骤3：将暂存的修改放到新建分支中
+git stash pop
+#步骤4：使用命令进行常规的add、commit步骤
+git add.
+git commit -m "修改内容"
+#步骤5：将提交的内容push到远程服务器(在远程也同步新建分支develop_backup)
+git push origin develop_backup:develop_backup
+```
+
+### 切换分支
+
+```bash
+# 切换到已存在的分支
+git checkout <branchName>
+# 或者
+git switch <branchName>
+
+#切换到远程分支
+git checkout <branchName>
+#或者
+git checkout -t origin/<branchName>
+
+#创建并切换到新分支
+git checkout -b <new-branch-name>
+# 或者
+git switch -c <new-branch-name>
+
+# 切换回上一个分支
+git checkout -
+# 或者
+git switch -
+
+# 丢弃所有未提交的更改并强制切换
+git checkout -f lettershell
+```
+
 
 
 ## .gitignore
