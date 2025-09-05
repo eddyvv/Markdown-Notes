@@ -76,52 +76,52 @@ supports-priv-flags: no
 ```bash
 $ ethtool -S ens33
 NIC statistics:
-     rx_packets: 278          接收的数据包的数量
-     tx_packets: 245          发送的数据包的数量
-     rx_bytes: 200034         接收的字节数
-     tx_bytes: 47526          发送的字节数
-     rx_broadcast: 0          接收的广播数据包的数量
-     tx_broadcast: 0          发送的广播数据包的数量
-     rx_multicast: 0          接收的多播数据包的数量
-     tx_multicast: 0          发送的多播数据包的数量
-     rx_errors: 0             接收时发生的错误数量
-     tx_errors: 0             发送时发生的错误数量
-     tx_dropped: 0            发送时丢弃的数据包数量
-     multicast: 0             接收的多播数据包数量
-     collisions: 0            发送时发生的冲突数量
-     rx_length_errors: 0      接收时长度错误的数量
-     rx_over_errors: 0        接收时溢出错误的数量
-     rx_crc_errors: 0         接收时 CRC 错误的数量
-     rx_frame_errors: 0       接收时帧错误的数量
-     rx_no_buffer_count: 0    接收时缓冲区不足的数量
-     rx_missed_errors: 0      接收时丢失错误的数量
-     tx_aborted_errors: 0     发送时中止错误的数量
-     tx_carrier_errors: 0     发送时载波错误的数量
-     tx_fifo_errors: 0        发送时 FIFO 错误的数量
-     tx_heartbeat_errors: 0   发送时心跳错误的数量
-     tx_window_errors: 0      发送时窗口错误的数量
-     tx_abort_late_coll: 0    发送时延迟冲突中止的数量
-     tx_deferred_ok: 0        发送时延迟成功的数量
-     tx_single_coll_ok: 0     发送时单次冲突成功的数量
-     tx_multi_coll_ok: 0      发送时多次冲突成功的数量
-     tx_timeout_count: 0      发送时超时的数量
-     tx_restart_queue: 0      发送时重新启动队列的数量
-     rx_long_length_errors: 0 接收时长帧长度错误的数量
-     rx_short_length_errors: 0 接收时短帧长度错误的数量
-     rx_align_errors: 0        接收时对齐错误的数量
-     tx_tcp_seg_good: 5        发送的 TCP 分段成功的数量
-     tx_tcp_seg_failed: 0      发送的 TCP 分段失败的数量
-     rx_flow_control_xon: 0     接收的流量控制 XON 的数量
-     rx_flow_control_xoff: 0    接收的流量控制 XOFF 的数量
-     tx_flow_control_xon: 0     发送的流量控制 XON 的数量
-     tx_flow_control_xoff: 0    发送的流量控制 XOFF 的数量
-     rx_long_byte_count: 200034 接收的长帧字节数
-     rx_csum_offload_good: 266  接收校验和卸载成功的数量
-     rx_csum_offload_errors: 0  接收校验和卸载错误的数量
-     alloc_rx_buff_failed: 0    分配接收缓冲区失败的数量
-     tx_smbus: 0                发送的 SMBus 操作的数量
-     rx_smbus: 0                接收的 SMBus 操作的数量
-     dropped_smbus: 0           丢弃的 SMBus 操作的数量
+     rx_packets: 278          # 接收的数据包的数量
+     tx_packets: 245          # 发送的数据包的数量
+     rx_bytes: 200034         # 接收的字节数
+     tx_bytes: 47526          # 发送的字节数
+     rx_broadcast: 0          # 接收的广播数据包的数量
+     tx_broadcast: 0          # 发送的广播数据包的数量
+     rx_multicast: 0          # 接收的多播数据包的数量
+     tx_multicast: 0          # 发送的多播数据包的数量
+     rx_errors: 0             # 接收时发生的错误数量
+     tx_errors: 0             # 发送时发生的错误数量
+     tx_dropped: 0            # 发送时丢弃的数据包数量
+     multicast: 0             # 接收的多播数据包数量
+     collisions: 0            # 发送时发生的冲突数量
+     rx_length_errors: 0      # 接收时长度错误的数量
+     rx_over_errors: 0        # 接收时溢出错误的数量
+     rx_crc_errors: 0         # 接收时 CRC 错误的数量
+     rx_frame_errors: 0       # 接收时帧错误的数量
+     rx_no_buffer_count: 0    # 接收时缓冲区不足的数量
+     rx_missed_errors: 0      # 接收时丢失错误的数量
+     tx_aborted_errors: 0     # 发送时中止错误的数量
+     tx_carrier_errors: 0     # 发送时载波错误的数量
+     tx_fifo_errors: 0        # 发送时 FIFO 错误的数量
+     tx_heartbeat_errors: 0   # 发送时心跳错误的数量
+     tx_window_errors: 0      # 发送时窗口错误的数量
+     tx_abort_late_coll: 0    # 发送时延迟冲突中止的数量
+     tx_deferred_ok: 0        # 发送时延迟成功的数量
+     tx_single_coll_ok: 0     # 发送时单次冲突成功的数量
+     tx_multi_coll_ok: 0      # 发送时多次冲突成功的数量
+     tx_timeout_count: 0      # 发送时超时的数量
+     tx_restart_queue: 0      # 发送时重新启动队列的数量
+     rx_long_length_errors: 0 # 接收时长帧长度错误的数量
+     rx_short_length_errors: 0 # 接收时短帧长度错误的数量
+     rx_align_errors: 0        # 接收时对齐错误的数量
+     tx_tcp_seg_good: 5        # 发送的 TCP 分段成功的数量
+     tx_tcp_seg_failed: 0      # 发送的 TCP 分段失败的数量
+     rx_flow_control_xon: 0     # 接收的流量控制 XON 的数量
+     rx_flow_control_xoff: 0    # 接收的流量控制 XOFF 的数量
+     tx_flow_control_xon: 0     # 发送的流量控制 XON 的数量
+     tx_flow_control_xoff: 0    # 发送的流量控制 XOFF 的数量
+     rx_long_byte_count: 200034 # 接收的长帧字节数
+     rx_csum_offload_good: 266  # 接收校验和卸载成功的数量
+     rx_csum_offload_errors: 0  # 接收校验和卸载错误的数量
+     alloc_rx_buff_failed: 0    # 分配接收缓冲区失败的数量
+     tx_smbus: 0                # 发送的 SMBus 操作的数量
+     rx_smbus: 0                # 接收的 SMBus 操作的数量
+     dropped_smbus: 0           # 丢弃的 SMBus 操作的数量
 ```
 
 rx_fifo_errors 如果不为 0（在 ifconfig 中体现为 overruns 指标增长），就表示有包因为 Ring Buffer 装不下而被丢弃了。增大 Ring Buffer 的大小可以缓解丢包问题。修改命令如下：
