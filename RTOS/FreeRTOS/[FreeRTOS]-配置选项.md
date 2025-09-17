@@ -7,3 +7,6 @@
 ## configUSE_TIME_SLICING
 
 如果 [configUSE_TIME_SLICING](https://freertos.org/Documentation/02-Kernel/03-Supported-devices/02-Customization/#configuse_time_slicing) 为 0，则表示时间切片已关闭， 因此调度器不会在每个 tick 中断上在同等优先级的任务之间切换。
+
+
+
