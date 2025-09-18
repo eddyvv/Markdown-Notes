@@ -2,7 +2,7 @@
 
 perftest是一组基于uverbs编写的测试程序，是RDMA性能相关的micro-benchmark。可用于软硬件调优以及功能测试。
 
-![image-20221206111828373](image/perftest%E6%B5%8B%E8%AF%95/image-20221206111828373.png)
+![image-20221206111828373](./image\perftest测试/image-20221206111828373.png)
 
 ## 源码位置
 
@@ -99,7 +99,7 @@ Options:
 ib_send_bw -d rxe_0
 ```
 
-![image-20221104095535331](image/perftest%E6%B5%8B%E8%AF%95/image-20221104095535331.png)
+![image-20221104095535331](image/perftest测试/image-20221104095535331.png)
 
 客户端
 
@@ -107,7 +107,7 @@ ib_send_bw -d rxe_0
 ib_send_bw -d rxe_0 <server_ip>
 ```
 
-![image-20221104095554364](image/perftest%E6%B5%8B%E8%AF%95/image-20221104095554364.png)
+![image-20221104095554364](image/perftest测试/image-20221104095554364.png)
 
 ib_send_bw是用来测试RDMA Send操作的带宽的程序（infiniband_send*bandwidth），其中*<server_ip>表示服务器端的IP，根据自己虚拟机对应关系填写。
 
@@ -132,7 +132,7 @@ ib_send_lat -d rxe_0
 ib_send_lat -d rxe_0 <server_ip>
 ```
 
-![image-20221111090818758](image/perftest%E6%B5%8B%E8%AF%95/image-20221111090818758.png)
+![image-20221111090818758](image/perftest测试/image-20221111090818758.png)
 
 ib_send_lat是用来测试RDMA Send操作的延迟的程序（infiniband_send*bandwidth），其中*<server_ip>表示服务器端的IP，根据自己虚拟机对应关系填写。
 
