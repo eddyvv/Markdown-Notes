@@ -995,7 +995,7 @@ pci modify
 
 ### pci read
 
-从指定的 PCI 设备上读取数据，需要指定设备地址、偏移地址、数据类型和数据长度。
+从指定的 PCI 设备上读取配置空间数据，需要指定设备地址、偏移地址、数据类型和数据长度。
 
 ```bash
 # pci read <bus.dev.func> <offset> <data-type> <data-length>
@@ -1003,7 +1003,7 @@ pci modify
 
 ### pci write
 
-向指定的 PCI 设备上写入数据，需要指定设备地址、偏移地址、数据类型和数据长度。
+向指定的 PCI 设备上的配置空间写入数据，需要指定设备地址、偏移地址、数据类型和数据长度。
 
 ```bash
 # pci write <bus.dev.func> <offset> <data-type> <data-length>
