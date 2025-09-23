@@ -76,7 +76,7 @@ bash build.sh
 
 代码维护仓库：[ofiwg/librdmacm (github.com)](https://github.com/ofiwg/librdmacm)
 
-![image-20221110184609504](image/RDMA_Verbs%E7%BC%96%E7%A8%8B/image-20221110184609504.png)
+![image-20221110184609504](image/[RDMA]-Verbs编程/image-20221110184609504.png)
 
 图来自[RDMA应用程序系列——rping程序简介 - 墨天轮 (modb.pro)](https://www.modb.pro/db/485335)
 
@@ -118,7 +118,7 @@ udaddy
 udaddy -s 192.168.159.131
 ```
 
-![image-20221110204141868](image/RDMA_Verbs%E7%BC%96%E7%A8%8B/image-20221110204141868.png)
+![image-20221110204141868](image/[RDMA]-Verbs编程/image-20221110204141868.png)
 
 return 0表示正常退出。
 
@@ -136,7 +136,7 @@ rdma_server
 rdma_client -s 192.168.159.132
 ```
 
-![image-20221110204353372](image/RDMA_Verbs%E7%BC%96%E7%A8%8B/image-20221110204353372.png)
+![image-20221110204353372](image/[RDMA]-Verbs编程/image-20221110204353372.png)
 
 #### ib_send_bw性能测试
 
@@ -152,7 +152,7 @@ ib_send_bw
 ib_send_bw -d rxe0
 ```
 
-![image-20221110205008079](image/RDMA_Verbs%E7%BC%96%E7%A8%8B/image-20221110205008079.png)
+![image-20221110205008079](image/[RDMA]-Verbs编程/image-20221110205008079.png)
 
 #### rping
 
@@ -168,7 +168,7 @@ rping -s -C 101 -v
 rping -c -a 192.168.159.132 -C 10 -v
 ```
 
-![image-20221110205121422](image/RDMA_Verbs%E7%BC%96%E7%A8%8B/image-20221110205121422.png)
+![image-20221110205121422](image/[RDMA]-Verbs编程/image-20221110205121422.png)
 
 #### ucmatose
 
@@ -184,7 +184,7 @@ ucmatose
 ucmatose -s 192.168.159.132
 ```
 
-![image-20221110205229486](image/RDMA_Verbs%E7%BC%96%E7%A8%8B/image-20221110205229486.png)
+![image-20221110205229486](image/[RDMA]-Verbs编程/image-20221110205229486.png)
 
 
 
@@ -214,7 +214,7 @@ ucmatose -s 192.168.159.132
 9. 发布工作请求并轮询完成
 10. 清理
 
-![3bba5d9bae953ee8ca3519516cbfdec5.png](image/RDMA_Verbs%E7%BC%96%E7%A8%8B/3bba5d9bae953ee8ca3519516cbfdec5.png)
+![3bba5d9bae953ee8ca3519516cbfdec5.png](image/[RDMA]-Verbs编程/3bba5d9bae953ee8ca3519516cbfdec5.png)
 
 ### QP状态迁移
 
