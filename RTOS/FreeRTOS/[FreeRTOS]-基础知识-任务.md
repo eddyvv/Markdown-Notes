@@ -1,6 +1,6 @@
 # FreeRTOS基础知识-任务
 
-### 任务(Task)
+## 任务(Task)
 
 在 FreeRTOS 中，任务是应用程序的基本执行单元。每个任务都有自己的任务控制块（Task Control Block，TCB），其中包含任务的所有信息，如任务状态、优先级、堆栈指针等。任务的创建和删除可以使用以下 API：
 
@@ -9,7 +9,7 @@
 
 任务实际就是一个无限循环且不带返回值的C函数。
 
-#### 任务状态
+### 任务状态
 
 FreeRTOS存在4种任务状态：
 
@@ -24,7 +24,7 @@ FreeRTOS存在4种任务状态：
 
 ![TaskExecution.gif](../FreeRTOS/image/[FreeRTOS]-基础知识-任务/FreeRTOS任务状态.jpg)
 
-#### 任务优先级
+### 任务优先级
 
 FreeRTOS 中任务的最高优先级是通过 FreeRTOSConfig.h 文件中的 <font color=red>configMAX_PRIORITIES</font> 进行配置的，用户实际可以使用的优先级范围是 0 到 <font color=red>configMAX_PRIORITIES – 1</font>。比如我们配置此宏定义为 5，那么用户可以使用的优先级号是 0,1,2,3,4，不包含 5。
 
@@ -36,9 +36,9 @@ FreeRTOS 调度器可确保在就绪或运行状态下的任务始终比同样�
 
 处于相同优先级的任务数量不限。如果 configUSE_TIME_SLICING 未经定义，或者如果 configUSE_TIME_SLICING 设置为 1，则具有相同优先级的若干就绪状态任务将 通过时间切片轮询调度方案共享可用的处理时间。
 
-#### 相关函数
+### 相关函数
 
-##### xTaskCreate()
+#### [xTaskCreate](https://stormwall.freertos.org/zh-cn-cmn-s/Documentation/02-Kernel/04-API-references/01-Task-creation/01-xTaskCreate)
 
 xTaskCreate()函数用于创建一个新任务。原型如下
 
@@ -83,7 +83,7 @@ void main(void)
 
 ```
 
-##### vTaskDelete()
+#### [vTaskDelete](https://stormwall.freertos.org/zh-cn-cmn-s/Documentation/02-Kernel/04-API-references/01-Task-creation/03-vTaskDelete)
 
 vTaskDelete() 函数用于删除一个任务。原型如下：
 
@@ -122,11 +122,11 @@ void main()
 }
 ```
 
-#### 任务运行情况
+### 任务运行情况
 
 任务根据其运行情况，可以分为单次运行、周期运行、事件驱动运行三种模型，其中事件驱动模型可以最大限度提高 CPU 的使用效率，并且实时性好。
 
-#### 任务阻塞
+### 任务阻塞
 
 在 FreeRTOS 中，有两种方式可以让任务进入阻塞状态：
 
@@ -135,11 +135,11 @@ void main()
 
 
 
-#### 任务暂停
+### 任务暂停
 
 FreeRTOS 提供了让任务暂停（也称为“挂起”）执行、恢复执行的 API。
 
-##### vTaskSuspend
+#### [vTaskSuspend](https://stormwall.freertos.org/zh-cn-cmn-s/Documentation/02-Kernel/04-API-references/02-Task-control/06-vTaskSuspend)
 
 任务暂停的API
 
@@ -153,7 +153,9 @@ void vTaskSuspend( TaskHandle_t xTaskToSuspend )
 
 任务暂停后，调度器将不会赋予该任务CPU使用权，任务恢复后，调度器将根据该任务的优先级决定任务是否可以使用CPU而得到执行。任务恢复后，任务从暂停处继续向下执行。
 
-##### vTaskResume
+### 任务恢复
+
+#### [vTaskResume](https://stormwall.freertos.org/zh-cn-cmn-s/Documentation/02-Kernel/04-API-references/02-Task-control/07-vTaskResume)
 
 任务恢复执行的API
 
@@ -163,11 +165,48 @@ void vTaskResume( TaskHandle_t xTaskToResume )
 
 当对一个任务调用 vTaskSuspend(）后，该任务将从执行处暂停执行。除非对该任务调用vTaskResume(）否则该任务无法恢复执行。
 
+参数：
+
+* xTaskToResume：待恢复任务的句柄。
+
 <font color=red>注意</font>：对一个任务多次调用vTaskSuspend()暂停，仅需要在一处调用vTaskResume()即可恢复该任务。
 
-#### 任务挂起
+#### [xTaskResumeFromISR](https://stormwall.freertos.org/zh-cn-cmn-s/Documentation/02-Kernel/04-API-references/02-Task-control/08-xTaskResumeFromISR)
+
+此函数用于**在中断中恢复被挂起的任务**，若使用此函数，需要在 FreeRTOSConfig.h 文件中将宏 INCLUDE_xTaskResumeFromISR 配置为 1。**不论一个任务被函数 vTaskSuspend()挂起多少次**，只需要使用函数 vTakResumeFromISR()**恢复一次，就可以继续运行**。
+
+```c
+BaseType_t xTaskResumeFromISR( TaskHandle_t xTaskToResume )
+```
+
+参数：
+
+* xTaskToResume：要恢复的任务句柄。
+
+使用该函数需要判断返回值，根据返回值进行任务切换。函数 xTaskResumeFromISR()的返回值，如下所示：
+
+| 返回值  | 描述                         |
+| ------- | ---------------------------- |
+| pdTRUE  | 任务恢复后需要进行任务切换   |
+| pdFALSE | 任务恢复后不需要进行任务切换 |
+
+<font color=red>**FreeRTOS官方**</font>：xTaskResumeFromISR()通常被视为危险函数，因为其操作未被锁定。因此，如果中断可能在任务被挂起之前到达，从而中断丢失，则绝对不应使用该函数来同步任务与中断。可使用信号量，或者最好是直达任务通知，来避免这种可能性。
+
+### 任务挂起
 
 被挂起的任务，进入 Suspend 状态，调度器在任务选择的时候，不再调度进入 Suspend 状态的任务，除非再次对此任务调用 Resume，重新进入 Ready 队列，接受调度器的调度；
+
+#### [vTaskSuspend](https://stormwall.freertos.org/zh-cn-cmn-s/Documentation/02-Kernel/04-API-references/02-Task-control/06-vTaskSuspend)
+
+```c
+void vTaskSuspend( TaskHandle_t xTaskToSuspend )
+```
+
+参数：
+
+* xTaskToSuspend：表示需要挂起的任务句柄。一个任务可以通过设置参数为NULL来挂起自己。
+
+
 
 # 参考
 
@@ -180,3 +219,4 @@ void vTaskResume( TaskHandle_t xTaskToResume )
 [野火-STM32MP1-FreeRTOS应用开发实战指南——基于STM32MP157开发板_任务管理](https://doc.embedfire.com/linux/stm32mp1/freertos/zh/latest/application/tasks_management.html)
 
 [FreeRTOS 任务挂起和恢复API函数使用](https://www.cnblogs.com/bathwind/p/18109407)
+

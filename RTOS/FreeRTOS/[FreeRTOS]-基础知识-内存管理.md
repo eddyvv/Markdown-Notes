@@ -57,6 +57,13 @@ static uint8_t ucHeap[ configTOTAL_HEAP_SIZE ];
 
 内存分配时需要的总的堆空间由文件FreeRTOSConfig.h中的宏configTOTAL_HEAP_SIZE配置，单位为字。 通过调用函数xPortGetFreeHeapSize() 我们可以知道还剩下多少内存没有使用， 但是并不包括内存碎片。这样一来我们可以实时的调整和优化configTOTAL_HEAP_SIZE的大小。
 
+特点：
+
+* 支持动态申请和释放。
+* 按地址升序，优先返回第一个满足size需求的空闲块。
+* 链表管理，支持相邻空闲块拼接。
+* 申请时间具有不确定性，因为检索空闲块需要检索链表，但是效率比标准C库中的malloc函数高得多。
+
 heap_4.c方案的空闲内存块也是以单链表的形式连接起来的，BlockLink_t类型的局部静态变量xStart表示链表头， 但heap_4.c内存管理方案的链表尾部则保存在内存堆空间最后位置， 并使用BlockLink_t指针类型局部静态变量pxEnd指向这个区域 （而heap_2.c内存管理方案则使用BlockLink_t类型的静态变量xEnd表示链表尾）
 
 heap_4.c内存管理方案的空闲块链表不是以内存块大小进行排序的，而是以内存块起始地址大小排序， 内存地址小的在前，地址大的在后，因为heap_4.c方案还有一个内存合并算法，在释放内存的时候， 假如相邻的两个空闲内存块在地址上是连续的，那么就可以合并为一个内存块，这也是为了适应合并算法而作的改变。
@@ -354,11 +361,49 @@ BlockLink_t *pxLink;
 
 heap_5.c方案在实现动态内存分配时与heap4.c方案一样，采用最佳匹配算法和合并算法， 并且**允许内存堆跨越多个非连续的内存区，也就是允许在不连续的内存堆中实现内存分配**， 比如用户在片内RAM中定义一个内存堆，还可以在外部SDRAM再定义一个或多个内存堆，这些内存都归系统管理。
 
+特点：
 
+* 支持动态申请和释放。
+* 按地址升序，优先返回第一个满足size需求的空闲块。
+* 链表管理，支持相邻空闲块拼接。
+* 支持内存堆跨越多个非连续的内存区。
+* 申请时间具有不确定性，因为检索空闲块需要检索链表，但是效率比标准C库中的malloc函数高得多。
+
+#### xHeapRegions
+
+在FreeRTOS heap_5中，HeapRegion_t数组用于定义多个空闲内存区域，这些区域必须是未被其他变量占用的可用内存。每个区域由起始地址和大小定义，数组必须以 `{ NULL, 0 }` 终止。
+
+```c
+typedef struct HeapRegion  
+{  
+    /* Start address of a block of memory that will be part of the heap.*/  
+    uint8_t *pucStartAddress;  /* 内存堆起始地址 */
+
+    /* Size of the block of memory. */  
+    size_t xSizeInBytes;  /* 内存块大小 */
+} HeapRegion_t;  
+```
+
+<font color=red>注意</font>：
+
+* 内存块要按照地址顺序放入到数组中，地址小的在前；
+* 数组必须以使用一个NULL指针和0字节元素作为结束，以便让内存管理程序知道何时结束；
 
 ![内存初始化完成](./image/[FreeRTOS]-基础知识-内存管理/image-20210527120120595.png)
 
 <center>芯片RAM物理地址分配</center>
+
+按照如上物理地址，其对应的HeapRegion_t结构分配如下所示：
+
+```c
+const HeapRegion_t xHeapRegions[] =  
+{  
+    { ( uint8_t * ) 0x00010000UL, 0x10000 },  
+    { ( uint8_t * ) 0x00020000UL, 0x08000 },  
+    { ( uint8_t * ) 0x00030000UL, 0x08000 }, 
+    { NULL, 0 } /* Terminates the array. */  
+};  
+```
 
 ![内存初始化完成](./image/[FreeRTOS]-基础知识-内存管理/memory014.png)
 
@@ -385,6 +430,14 @@ void vApplicationMallocFailedHook( void );
 
 [14. 内存管理](https://doc.embedfire.com/linux/stm32mp1/freertos/zh/latest/application/memory_management.html#)
 
+[FreeRTOS 篇章之 heap 堆内存分配分析](https://arachnid.cc/freertos-heap/)
+
 [FreeRTOS高级篇7---FreeRTOS内存管理分析](https://blog.csdn.net/zhzht19861011/article/details/51606068)
 
 [FreeRTOS Heap Memory Management (1) - 内存分配介绍](https://www.cnblogs.com/yanpio/p/14817341.html)
+
+[freertos内存管理](https://www.laumy.tech/1256.html/freertos%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/)
+
+[【freertos】008-内存管理及其实现细节 ](https://www.cnblogs.com/lizhuming/p/16297294.html)
+
+[FreeRTOS 堆内存管理](https://www.freertos.org/zh-cn-cmn-s/Documentation/02-Kernel/02-Kernel-features/09-Memory-management/01-Memory-management)
