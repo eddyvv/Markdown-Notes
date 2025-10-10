@@ -31,10 +31,10 @@ lspci -tn                --树形结构显示设备上所有pcie设备，并devi
 lspci -vv -s 00:1f.3     --查看00:1f.3设备的详细信息
 lspci -xxx -s 00:1f.3    --查看00:1f.3设备配置空间的所有内容
 lspci -vv -d 8086:8c22   --查看8086:8c22设备的的详细信息
-lspci -xxx-d 8086:8c22   --查看8086:8c22设备配置空间的所有内容
+lspci -xxx -d 8086:8c22   --查看8086:8c22设备配置空间的所有内容
+lspci -vvvxxx -s 01:00.0 --查看01:00.0设备配置空间的所有内容及寄存器值
+lspci -xxxx -s 01:00.0	--查看01:00.0设备配置空间寄存器值
 ```
-
-
 
 ## 查看Linux下的PCIe设备
 
@@ -49,7 +49,7 @@ lspci
 ### 查看特定设备详细信息
 
 ```bash
-lspci -s <bbf number> -vvv
+lspci -s <bdf number> -vvv
 ```
 
 ### 查看配置空间
