@@ -8,11 +8,27 @@ PCIe的两个端点通过双link全双工传输，一个link负责发送，一�
 
 ## 拓扑
 
-PCIe采用树拓扑，其体系结构中一般由Root Complex、Switch、EndPoint等类型的PCIe设备组成。
+PCIe采用树拓扑，PCI总线从0开始，不超过256（但一般不会一层一层挂太多）。Device不超过32，Function不超过8，其体系结构中一般由Root Complex、Switch、EndPoint等类型的PCIe设备组成。
 
 ![image-20230526145832280](image/[PCIe]-基础知识/image-20230526145832280.png)
 
 > 《PCI Express Technology 3.0.pdf》Chapter 3: Configuration Overview p87
+
+### BDF
+
+ PCIe总线中的每一个功能都有一个唯一的标识符与之对应。这个标识符就是BDF（Bus，Device，Function）
+
+### BUS
+
+总线号，最多可以通过配置软件分配<font color=red>**256**</font >个总线号。初始总线号，总线0，通常由硬件分配给Root Complex。总线0由一个集成了端点的虚拟PCI总线和一个硬编码的设备号和功能号的虚拟PCI-to-PCI桥(P2P)组成。每个P2P网桥创建一个新的总线，附加的PCle设备可以连接到该总线。每个总线必须被分配一个唯一的总线号。配置软件通过搜索从总线0、设备0、功能0开始的桥，开始分配总线号，当发现网桥时，软件会给新总线分配一个唯一且大于网桥所在总线号的总线号。一旦新总线被分配了一个总线号，软件就开始在继续扫描当前总线上的更多的桥之前寻找新总线上的桥。
+
+### Device
+
+设备号，PCle允许在单个PCI总线上最多<font color=red>**32**</font >个设备号，然而，PCle的点对点特性意味着只有单个设备可以直接连接到PCle链路，并且该设备总是以device 0结束。RC和Switch有虚拟PCI总线，它允许多个设备“连接”到总线上。每个设备必须实现Function 0，并且可能包含多达8个Function 的集合。当包含两个或多个Function时，设备称为多功能设备。
+
+### Function
+
+功能号，如前所述，功能被包含到每个Device中，最多包含<font color=red>**8**</font >个功能号。这些功能可能包括硬盘接口、显示控制器、以太网控制器、USB控制器等。具有多个功能的设备不需要按顺序实现。例如，设备可能实现Function0、2和7。因此，当软件检测多功能设备时，必须检查每一个可能的功能，以了解哪些功能是存在的。每个Function也有自己的配置地址空间，用于设置关联的资源。
 
 ## PCIx系统框图
 
@@ -73,9 +89,15 @@ Bridge是一种连接不同总线的设备，用于扩展PCIe拓扑结构。它�
 
 PCI Express (PCIe) Type 0 设备的前 256 个字节分为两部分：**前 64 个字节是标准配置空间头部**（Header），用于描述设备的基本信息和功能；**后 192 个字节PCI Express Capbility结构**，用于描述设备的扩展能力和配置。
 
+早期的PCI时期，系统为每个PCI设备分配的内存大小仅有256个Bytes。到后来的PCIE时期，随着设备性能增强，PCIE设备的配置空间扩展至4K个Bytes。在这里需要注意：PCIE一共支持256条Bus，32个Dev，8个Fun。因此在满负载的情况下，共需内存大小 = 4k * 256 *32*8  = 256M，这个256M的内存空间是为PCIE设备准备的空间系统不可用。
+
 ![image-20230619093854294](image/[PCIe]-基础知识/image-20230619093854294.png)
 
 > 《PCI Express_ Base Specification Revision 4.0 Version 0.3 ( PDFDrive ).pdf》p567
+
+![image-20230619093854294](image/[PCIe]-基础知识/pci_config_hdr.png)
+
+> 《PCI Express Technology 3.0.pdf》p90
 
 ## 访问方式
 
@@ -278,7 +300,7 @@ BIST被调用的 Function 不能阻止 PCI Express 链路的正常操作。
 
 ### Capabilities Pointer (Offset 34h)
 
-该寄存器用于指向由该 Func 实现的能力的链表。由于需要所有 PCI Express 功能来实现 PCI 功率管理能力和 PCI Express 能力结构，因此这些结构必须被包括在链表中的某处; 该寄存器可以指向这些能力结构中的任一个或者指向由该功能实现的可选能力结构。底部两位被保留并且必须被设置为 00b。在使用该寄存器作为配置空间中指向新功能的链表的第一条目的指针之前，软件必须屏蔽这些位。具体使用实例见[PCI Capabilities List](#Capabilities List)。
+该寄存器用于指向由该 Func 实现的能力的链表。由于需要所有 PCI Express 功能来实现 PCI 功率管理能力和 PCI Express 能力结构，因此这些结构必须被包括在链表中的某处; 该寄存器可以指向这些能力结构中的任一个或者指向由该功能实现的可选能力结构。**底部两位被保留并且必须被设置为 00b**。在使用该寄存器作为配置空间中指向新功能的链表的第一条目的指针之前，软件必须屏蔽这些位。具体使用实例见[PCI Capabilities List](#Capabilities List)。
 
 ### Interrupt Line Register (Offset 3Ch)
 
@@ -1191,7 +1213,11 @@ consistent_dma_mask_bits  enable           local_cpus     power_state  resource0
 
 # 参考
 
+[PCI Wiki](https://wiki.osdev.org/PCI)
+
 [PCI Express - 维基百科，自由的百科全书 (wikipedia.org)](https://zh.wikipedia.org/wiki/PCI_Express)
+
+[PCI configuration space](https://en.wikipedia.org/wiki/PCI_configuration_space)
 
 [PCIE 之linux驱动分析 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/399102423)
 
