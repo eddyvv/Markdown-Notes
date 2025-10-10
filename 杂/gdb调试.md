@@ -1,5 +1,17 @@
 # GDB调试
 
+## 带参数执行
+
+```bash
+gdb --args ./A V1 V2 V3
+
+gdb ./A，进入gdb后  run V1 V2 V3
+
+gdb ./A，进入gdb后  设置参数set args V1 V2 V3 再直接 run。
+```
+
+## 常用命令
+
 ### 执行程序 run
 
 缩写r运行程序，若存在断点，执行到断点处暂停，若无断点，则程序执行完成
