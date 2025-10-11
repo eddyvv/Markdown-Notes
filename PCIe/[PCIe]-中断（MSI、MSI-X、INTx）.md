@@ -125,8 +125,7 @@ MSI⁃X Capability 中断机制与 MSI Capability 的中断机制类似。 PCIe 
 
 #### Capability ID
 
-* Capability ID 字段记载 MSI⁃X Capability 结构的 ID 号， 其值为 0x11。 在 PCIe 设备中，
-  每个 Capability 都有唯一的 ID 号。
+* Capability ID 字段记载 MSI⁃X Capability 结构的 ID 号， 其值为 0x11。 在 PCIe 设备中，每个 Capability 都有唯一的 ID 号。
 
 #### Next Pointer
 

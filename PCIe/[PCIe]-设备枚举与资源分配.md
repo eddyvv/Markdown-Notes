@@ -1,8 +1,10 @@
 # PCIe设备枚举与资源分配
 
+## Linux内核
+
 `Linux kernel`支持两种PCI扫描方式：`ACPI`的方式和`非ACPI`的方式(Legacy mode)。系统默认使用ACPI的方式枚举PCIE/PCI设备。如果用户想使用非ACPI的方式枚举PCIE/PCI设备，可以通过在kernel 启动参数中加入`pci=noacpi`。
 
-## 枚举步骤
+### 枚举步骤
 
 PCI枚举是个不断递归调用发现新设备的过程，PCI枚举简单来说主要包括下面几个步骤：
 
@@ -23,20 +25,9 @@ PCI枚举是个不断递归调用发现新设备的过程，PCI枚举简单来�
 7. **中断分配**： 系统可能会为设备分配中断向量，以便设备能够通过中断通知主机系统关于特定事件的发生。
 8. **驱动加载**： 一旦PCIe设备被枚举和初始化，系统将加载适当的驱动程序，以便与设备进行通信和控制。
 
-## UEFI对PCI/PCIe的支持
-
-UEFI对于PCI总线的支持包括：
-
-1. 提供分配PCI资源的协议；
-2. 提供访问PCI设备的协议；
-3. 提供PCI枚举器，枚举PCI总线上的设备以及分配设备所需的资源；
-4. 提供各种Lib，方便驱动程序访问PCI/PCIe配置空间或者MMIO/IO空间。
-
-[uboot PCI相关命令](../uboot/Uboot命令.md#pci命令)
-
-## ACPI方式枚举PCIe/PCI设备
 
 
+### ACPI方式枚举PCIe/PCI设备
 
 ```c
 acpi_init
@@ -52,8 +43,34 @@ acpi_init
     	-->acpi_pci_link_init
 ```
 
+## BootLoader中对PCI/PCIe设备的枚举
 
+### UEFI对PCI/PCIe的支持
+
+UEFI对于PCI总线的支持包括：
+
+1. 提供分配PCI资源的协议；
+2. 提供访问PCI设备的协议；
+3. 提供PCI枚举器，枚举PCI总线上的设备以及分配设备所需的资源；
+4. 提供各种Lib，方便驱动程序访问PCI/PCIe配置空间或者MMIO/IO空间。
+
+### UBOOT对PCI/CPIe设备的枚举
+
+```c
+pci_uclass_post_probe
+    -->pci_bind_bus_devices	/* 绑定指定 PCI 总线上的设备。遍历总线上的设备，读取其配置空间信息，并根据设备树或驱动程序匹配绑定设备，同时更新设备的父平台数据。 */
+    -->pci_auto_config_devices
+    	-->pciauto_config_init	/* 在所有可用的 PCI 资源区域中，分别找出 I/O、内存、可预取内存三类中最大的那一块，并保存指针，方便后续分配。 */
+       	-->dm_pciauto_config_device	/* 配置一个 PCI 设备以使其可以正常使用。如果该设备是桥设备，还会探测其下游设备。 */
+    		-->dm_pciauto_setup_device	/* 为指定的 PCI 设备根据类型和资源区域（内存、预取内存或 I/O）分配bar地址空间。该函数还会设置设备的命令状态寄存器以启用必要的功能，并处理特定设备（如 VGA）的特殊配置需求。 */
+```
+
+[uboot PCI相关命令](../uboot/Uboot命令.md#pci命令)
 
 # 参考
 
 [PCIe学习笔记——4.设备的枚举过程](https://zhuanlan.zhihu.com/p/4993687465)
+
+[PCIe总线-Linux内核PCIe设备枚举流程分析（十三）](https://blog.csdn.net/u011037593/article/details/142031554)
+
+[PCIe枚举过程](https://zhuanlan.zhihu.com/p/4552982975)
