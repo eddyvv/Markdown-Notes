@@ -201,7 +201,7 @@ setpci -s <bdf number> COMMAND=0x0140 #写入
 
 ### <span id = "Device ID">Device ID Register (Offset 02h)</span>
 
-Vendor ID、Device ID这两个寄存器的值由 [PCI-SIG](https://pcisig.com/) 分配， 只读。 其中 Vendor ID 代表 PCI 设备的生产厂商， 而 Device ID 代表这个厂商所生产的具体设备。 
+Vendor ID、Device ID这两个寄存器的值由 [PCI-SIG](https://pcisig.com/) 分配， 只读，并且 `0xFFFF` 是无效值，将在读取对不存在设备的配置空间寄存器的访问时返回。 其中 Vendor ID 代表 PCI 设备的生产厂商， 而 Device ID 代表这个厂商所生产的具体设备。 
 
 ### <span id = "Command Register">Command Register(Offset 04h)</span>
 
@@ -452,7 +452,7 @@ Type 1 配置空间报头内可用的 BAR 的数量与 Type 0 配置空间报头
 
 ### Subordinate Bus Number Register (Offset 1Ah)
 
-从属总线号寄存器用于记录桥后面 (或从属) 的最高编号PCI总线段的总线号。配置软件对此寄存器中的值进行编程。网桥使用该寄存器来确定何时以及如何响应在其主接口上观察到的ID路由TLP，特别是何时将TLP转发到其辅助接口。该寄存器必须实现为读写，并且默认值必须为00h。
+**从属总线号寄存器用于记录桥后面 (或从属) 的最高编号PCI总线段的总线号**。配置软件对此寄存器中的值进行编程。网桥使用该寄存器来确定何时以及如何响应在其主接口上观察到的ID路由TLP，特别是何时将TLP转发到其辅助接口。该寄存器必须实现为读写，并且默认值必须为00h。
 
 ### Secondary Latency Timer (Offset 1Bh)
 
@@ -516,7 +516,7 @@ I/O Base和I/O Limit寄存器的低四位都是只读的，包含相同的值，
 
 如果在桥的次级侧上没有可预取存储器，则必须将可预取存储器限制寄存器编程为比可预取存储器基址寄存器更小的值。如果网桥的辅助端没有可预取的内存，并且没有内存映射的地址空间，然后桥不将任何存储器事务从主总线转发到副总线，而是将所有存储器事务从副总线转发到主总线。
 
-可预取内存基础寄存器和可预取内存限制寄存器的底部4位都是只读的，包含相同的值，并对桥是否支持64位地址进行编码。如果这四位的值为0h，则桥接器仅支持32位地址。如果这四位具有值01h，则桥支持64位地址，并且可预取基高32位和可预取极限高32位寄存器分别保持the64-bit可预取基地址和极限地址的其余部分。保留所有其他编码。
+可预取内存基址寄存器和可预取内存限制寄存器的**底部4位都是只读的**，包含相同的值，并对桥是否支持64位地址进行编码。如果这四位的值为0h，则桥接器仅支持32位地址。**如果这四位具有值01h，则桥支持64位地址**，并且可预取基高32位和可预取极限高32位寄存器分别保持the64-bit可预取基地址和极限地址的其余部分。保留所有其他编码。
 
 ### Prefetchable Base Upper 32 Bits/Prefetchable Limit Upper 32 Bits Registers (Offset 28h/2Ch)
 
@@ -1031,7 +1031,72 @@ struct pci_sriov {
 
 ```
 
+## PCIe相较于PCI的更改
 
+### PCI配置空间的更改
+
+| 表头类型    | 寄存器(编码器)                        | 比特位置 | 差异                                                         |
+| ----------- | ------------------------------------- | -------- | ------------------------------------------------------------ |
+| All Headers | Command Register (0x04)               | 3        | Special Cycle Enable：不适用于PCIe。硬连线到0。              |
+| All Headers | Command Register (0x04)               | 4        | Memory Write and Invalidate: 不适用于PCIe。硬连线至0。       |
+| All Headers | Command Register (0x04)               | 5        | VGA Palette Snoop: 不适用于PCIe。硬连线为0。                 |
+| All Headers | Command Register (0x04)               | 7        | IDSEL Stepping/Wait Cycle Control: 不适用于PCIe。硬连线到0。 |
+| All Headers | Command Register (0x04)               | 9        | Fast Back-to-Back Transactions Enable: 不适用于PCIe。硬连线至0。 |
+| All Headers | Status Register (0x06)                | 4        | Capabilities List: 需要所有PCIe设备来实现能力结构。硬连线到1。 |
+| All Headers | Status Register (0x06)                | 5        | 66 MHz Capable: 不适用于PCIe。硬连线到0。                    |
+| All Headers | Status Register (0x06)                | 7        | Fast Back-to-Back Transactions Capable: 不适用于PCIe。硬连线至0。 |
+| All Headers | Status Register (0x06)                | 10:9     | DEVSEL Timing: 不适用于PCIe。硬连线为0。                     |
+| All Headers | Cache Line Size Register (0x0C)       | All Bits | 仅用于遗留用途。                                             |
+| All Headers | Master Latency Timer Register (0x0D)  | All Bits | 不适用于PCIe。硬连线至0。                                    |
+| Type 0      | Base Address Registers (0x10:0x24)    | All Bits | PCIe端点设备必须在范围不包含具有读取副作用的内存或内存不允许写入合并的情况下设置该BAR的可预取位。 非遗留端点设备必须支持64位寻址。 请求的最小内存地址范围为BAR 128字节。 |
+| Type 0      | Min_Gnt/Max_Lat Registers (0x3E:0x3F) | All Bits | 不适用于PCIe。硬连线为0。                                    |
+| Type 1      | Base Address Registers (0x10:0x24)    | All Bits | PCIe端点设备必须在范围不包含具有读取副作用的内存或内存不允许写入合并的情况下设置BAR的可预取位。 非遗留端点设备必须支持64位寻址。 请求的最小内存地址范围为BAR 128字节。 |
+| Type 1      | Primary Bus Number (0x18)             | All Bits | 仅为遗留目的实现。                                           |
+| Type 1      | Secondary Latency Timer (0x1B)        | All Bits | 不适用于PCIe。硬连线为0。                                    |
+| Type 1      | Secondary Status Register (0x1E)      | 5        | 支持66 MHz：不适用于PCIe。硬连线到0。                        |
+| Type 1      | Secondary Status Register (0x1E)      | 7        | Fast Back-to-Back Transactions Capable: 不适用于PCIe。硬连线为0。 |
+| Type 1      | Secondary Status Register (0x1E)      | 10:9     | DEVSEL Timing: 不适用于PCIe。硬连线到0。                     |
+| Type 1      | Prefetchable Memory Base/Limit (0x24) | All Bits | 必须表示支持64位地址。                                       |
+| Type 1      | Bridge Control Register (0x3E)        | 5        | Master Abort Mode: 不适用于PCIe。硬连线为0。                 |
+| Type 1      | Bridge Control Register (0x3E)        | 7        | Fast Back-to-Back Transactions Enable: 不适用于PCIe。硬连线至0。 |
+| Type 1      | Bridge Control Register (0x3E)        | 8        | Primary Discard Timer: 不适用于PCIe。硬连线到0。             |
+| Type 1      | Bridge Control Register (0x3E)        | 9        | Secondary Discard Timer: 不适用于PCIe。硬连线为0。           |
+| Type 1      | Bridge Control Register (0x3E)        | 10       | Discard Timer Status: 不适用于PCIe。硬连线至0。              |
+| Type 1      | Bridge Control Register (0x3E)        | 11       | Discard Timer SERR# Enable: 不适用于PCIe。硬连线到0。        |
+
+### 扩展PCI总线编号
+
+PCI的旧版本（如“PCI Conventional”）最多限制为256个PCI总线段。 PCI Express通过引入“PCI Segment Groups”扩展了这一点，其中系统(理论上)可以具有多达65536个PCI段组，每个组具有256PCI总线段，从而允许单个计算机最多具有2个24(16777216)个PCI总线段。
+
+PCI段组被编号，并且在大多数系统中只有一个PCI段组 (PCI段组编号为0)。 传统PCI配置空间访问机制#1（为了向后兼容而仍然存在）没有“PCI段组”字段，因此只能用于访问PCI段组号为0的PCI配置空间。 必须使用增强配置机制访问其他PCI段组中任何设备的PCI配置空间。
+
+### 增强配置机制
+
+增强的配置机制利用内存映射的地址空间范围来访问PCI配置空间。 简而言之，内存地址决定了被访问的段组，总线，设备，功能和寄存器。 在x86和x64平台上，每个内存区域的地址由ACPI“MCFG”表确定。 此ACPI表的格式为：
+
+| 偏移 | 长度 | 描述                                   |
+| ---- | ---- | -------------------------------------- |
+| 0    | 4    | 表签名（“MCFG”）                       |
+| 4    | 4    | 表长，单位为字节                       |
+| 8    | 1    | Revision (1)                           |
+| 9    | 1    | 校验和 (表中所有字节的总和 & 0xFF = 0) |
+| 10   | 6    | OEM ID（与其他ACPI表格的含义相同）     |
+| 16   | 8    | OEM表ID(厂家型号ID)                    |
+| 24   | 4    | OEM改版 (与其他ACPI表意义相同)         |
+| 28   | 4    | 创建者ID（与其他ACPI表的含义相同）     |
+| 32   | 4    | 创建者修订版(含义与其他ACPI表相同)     |
+| 36   | 8    | Reserved                               |
+
+配置空间基址分配结构遵循以下格式
+
+| **偏移**  | **长度** |          |          |                               |
+| --------- | -------- | -------- | -------- | ----------------------------- |
+|           |          | **偏移** | **长度** | **描述**                      |
+| 44+(16*n) | 16       | 0        | 8        | 增强配置机制的基址            |
+| 44+(16*n) | 16       | 8        | 2        | PCI网段组号                   |
+| 44+(16*n) | 16       | 10       | 1        | 启动此主机桥解码的PCI总线号   |
+| 44+(16*n) | 16       | 11       | 1        | 结束此主机网桥解码的PCI总线号 |
+| 44+(16*n) | 16       | 12       | 4        | 预留                          |
 
 ## 内核获取扩展结构
 
@@ -1266,3 +1331,5 @@ consistent_dma_mask_bits  enable           local_cpus     power_state  resource0
 《RichardSolomon_PCI_Express.pdf》 SR-IOV PF、VF配置空间例子。
 
 [PCIe技术网](https://www.pcietech.com/page/2/)
+
+[《PCI-to-PCI Bridge Architecture Specification.pdf》](https://0x04.net/~mwk/doc/pci/PCI-to-PCI%20Bridge%20Architecture%20Specification.pdf) PCI桥规范文档
