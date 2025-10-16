@@ -1,14 +1,10 @@
+# Linux内核基础知识
 
-
-
-
-![Linux_kernel_map](image/Linux%E5%86%85%E6%A0%B8/Linux_kernel_map.png)
+![Linux_kernel_map](image/[Linux]-内核基础知识/Linux_kernel_map.png)
 
 <center>Linux Kernel Map</center>
 
-![1200px-Simplified_Structure_of_the_Linux_Kernel.svg](image/Linux%E5%86%85%E6%A0%B8/1200px-Simplified_Structure_of_the_Linux_Kernel.svg.png)
-
-
+![1200px-Simplified_Structure_of_the_Linux_Kernel.svg](image/[Linux]-内核基础知识/1200px-Simplified_Structure_of_the_Linux_Kernel.svg.png)
 
 # KConfig文件
 
@@ -49,7 +45,7 @@ Kconfig用于内核的配置，主要用来完成config条目界面，一般用�
 
 以menu开头，endmenu结束，中间的内容即是菜单的内容。
 
-![image-20230308161616689](image/Linux%E5%86%85%E6%A0%B8/image-20230308161616689.png)
+![image-20230308161616689](image/[Linux]-内核基础知识/image-20230308161616689.png)
 
 ## source条目
 
@@ -59,13 +55,13 @@ Kconfig用于内核的配置，主要用来完成config条目界面，一般用�
 
 多选一选项，以choice开始，endchoice结束，中间的内容即是多选一选项中的内容。
 
-![image-20230308163907590](image/Linux%E5%86%85%E6%A0%B8/image-20230308163907590.png)
+![image-20230308163907590](image/[Linux]-内核基础知识/image-20230308163907590.png)
 
 ## menuconfig条目
 
 表示带选项的菜单，通常与if/endif联用，表示选中的条目才会出现。
 
-![image-20230308163451056](image/Linux%E5%86%85%E6%A0%B8/image-20230308163451056.png)
+![image-20230308163451056](image/[Linux]-内核基础知识/image-20230308163451056.png)
 
 ## comment条目
 
@@ -73,7 +69,7 @@ Kconfig用于内核的配置，主要用来完成config条目界面，一般用�
 
 `make menuconfig` 配置完成之后，配置结果（变量的值）会保存在内核源码顶层目录的`.config`文件中，Makefile编译内核时回去读取`.config`文件中的变量，来控制编译行为。
 
-![image-20230308164749688](image/Linux%E5%86%85%E6%A0%B8/image-20230308164749688.png)
+![image-20230308164749688](image/[Linux]-内核基础知识/image-20230308164749688.png)
 
 ```makefile
 obj-y 编译进内核
@@ -222,18 +218,18 @@ reboot
 
 在`GRUB`页面选择`Advanced options for Ubuntu`
 
-![image-20230515104210488](image/Linux%E5%86%85%E6%A0%B8/image-20230515104210488.png)
+![image-20230515104210488](image/[Linux]-内核基础知识/image-20230515104210488.png)
 
 选择需要启动的内核版本
 
-![image-20230517111217516](image/Linux%E5%86%85%E6%A0%B8/image-20230517111217516.png)
+![image-20230517111217516](image/[Linux]-内核基础知识/image-20230517111217516.png)
 
 
 
 
 <center>安装新内核之前的内核版本</center>
 
-![image-20230517110513053](image/Linux%E5%86%85%E6%A0%B8/image-20230517110513053.png)
+![image-20230517110513053](image/[Linux]-内核基础知识/image-20230517110513053.png)
 
 <center>安装新内核之后</center>
 
@@ -390,7 +386,7 @@ GRUB_TIMEOUT=10
 GRUB_COMLINE_LINUX_DEFAULT="text"
 ```
 
-![image-20230515103459264](image/Linux%E5%86%85%E6%A0%B8/image-20230515103459264.png)
+![image-20230515103459264](image/[Linux]-内核基础知识/image-20230515103459264.png)
 
 执行
 
@@ -398,7 +394,7 @@ GRUB_COMLINE_LINUX_DEFAULT="text"
 sudo update-grub
 ```
 
-![image-20230515103559801](image/Linux%E5%86%85%E6%A0%B8/image-20230515103559801.png)
+![image-20230515103559801](image/[Linux]-内核基础知识/image-20230515103559801.png)
 
 ### 5. 内核启动卡在`loading initial ramdisk`<a name="ramdisk"/>
 
@@ -422,7 +418,7 @@ sudo make INSTALL_MOD_STRIP=1 modules_install
 
 报错信息：
 
-![image-20230516082845572](image/Linux%E5%86%85%E6%A0%B8/image-20230516082845572.png)
+![image-20230516082845572](image/[Linux]-内核基础知识/image-20230516082845572.png)
 
 解决方法：
 
