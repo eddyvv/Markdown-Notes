@@ -998,7 +998,7 @@ pci modify
 从指定的 PCI 设备上读取配置空间数据，需要指定设备地址、偏移地址、数据类型和数据长度。
 
 ```bash
-# pci read[.b .w .l] <bus.dev.func> <offset> [<data-length>]
+# pci read[.b .w .l] <bus.dev.func> <reg> [<data-length>]
 ```
 
 ### pci write
@@ -1006,7 +1006,7 @@ pci modify
 向指定的 PCI 设备上的配置空间写入数据，需要指定设备地址、偏移地址、数据类型和数据长度。
 
 ```bash
-# pci write[.b .w .l] <bus.dev.func> <data> <data-length>
+# pci write[.b .w .l] <bus.dev.func> <reg> <data>
 ```
 
 ### pci enum
