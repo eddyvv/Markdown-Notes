@@ -30,9 +30,9 @@ PCI总线使用 **INTA#**、**INTB#**、**INTC#**和**INTD#**信号向处理器�
 
 ### MSI限制
 
-1. MSI相关寄存器放置于配置空间中，从 Message Control 寄存器 multiple message Capble 字段可以看出 MSI 最多支持 32 个中断向量，且必须是 2<sup>N</sup>，也就是说如果一个 function 需要3个中断向量，必须申请4个才可以满足。
+MSI相关寄存器放置于配置空间中，从 Message Control 寄存器 multiple message Capble 字段可以看出 MSI 最多支持 32 个中断向量，且必须是 2<sup>N</sup>，也就是说如果一个 function 需要3个中断向量，必须申请4个才可以满足。
 
-2. MSI要求中断控制器分配给该function的中断向量号必须连续。
+MSI要求中断控制器分配给该function的中断向量号必须连续。
 
 MSI Capability 结构共有四种组成方式， 分别是 32 和 64 位的 Message 结构， 32 位和 64 位带中断 Masking 的结构。 MSI 报文可以使用 32 位地址或者 64 位地址， 而且可以使用Masking 机制使能或者禁止某个中断源。
 
@@ -48,8 +48,7 @@ Capability ID 字段为 05h，描述当前设备支持 MSI，此时 Capability �
 
 #### Capability ID
 
-* Capability ID 字段记载 MSI Capability 结构的 ID 号， 其值为 0x05。 在 PCIe 设备中， 每
-  一个 Capability 结构都有唯一的 ID 号。
+* Capability ID 字段记载 MSI Capability 结构的 ID 号， 其值为 0x05。 在 PCIe 设备中， 每一个 Capability 结构都有唯一的 ID 号。
 
 #### Next Pointer
 
