@@ -41,6 +41,8 @@ acpi_init
     	-->acpi_pci_link_init
 ```
 
+具体见[\[Linux]-内核PCIe设备枚举流程分析.md](../Linux/Linux内核学习/[Linux]-内核PCIe设备枚举流程分析.md)
+
 ## BootLoader中对PCI/PCIe设备的枚举
 
 ### UEFI对PCI/PCIe的支持
