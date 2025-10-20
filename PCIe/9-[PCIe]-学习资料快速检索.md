@@ -4,6 +4,14 @@
 
 [tldp PCI](https://tldp.org/LDP/tlk/dd/pci.html)
 
+# 专栏
+
+## CSDN
+
+[业余程序员plus-PCIe](https://blog.csdn.net/u011037593/category_12618509.html)
+
+
+
 # 书籍
 
 ## [《PCI Express Technology 3.0.pdf》](https://book.douban.com/subject/26180048/)
