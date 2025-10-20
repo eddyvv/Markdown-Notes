@@ -60,3 +60,9 @@ board_init_r
 
 * default：真正对设备的 BAR/ROM 等配置空间进行操作：
   	dm_pciauto_setup_device
+
+
+
+# 参考
+
+[Rockchip_Developer_Guide_UBoot_Nextdev_CN.pdf](https://download.t-firefly.com/product/Board/RK356X/Document/Developer/Rockchip_Developer_Guide_UBoot_Nextdev_CN.pdf)
