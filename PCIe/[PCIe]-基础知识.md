@@ -466,7 +466,9 @@ Subsystem Vendor ID 和 Subsystem ID 寄存器用于唯一地标识 pciexpress�
 
 ### Type 1 Base Address Registers (Offset 10h-14h)
 
-Type 1 配置空间报头内可用的 BAR 的数量与 Type 0 配置空间报头内可用的 BAR 的定义相同，具体使用的BAR 的数量不同。
+Type 1 配置空间报头内可用的 BAR 的数量与 Type 0 配置空间报头内可用的 BAR 的定义相同，具体使用的BAR的数量不同，Type1配置空间中禁止使用 I/O 映射的基地址寄存器。
+
+<font color=red>注意</font>：Type1配置头布局仅提供两个基址寄存器。因此，如果需要 64 位内存映 射，只能支持一个基址寄存器范围（两个基址寄存器将被单个 64 位映射消耗）。
 
 ### Primary Bus Number Register (Offset 18h)
 
