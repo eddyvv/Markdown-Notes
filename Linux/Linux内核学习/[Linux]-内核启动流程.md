@@ -2,6 +2,8 @@
 
 ARM64  QEMU仿真平台的构建、Linux源码的编译、QEMU的启动，可查看[[QEMU]-搭建arm64_linux_kernel环境](../../QEMU/[QEMU]-搭建arm64_linux_kernel环境.md)
 
+内核版本：linux-5.10 [The Linux Kernel Archives](https://www.kernel.org/)
+
 ## kernel启动第一阶段
 
 kernel启动的第一阶段主要为汇编代码，用于**初始化CPU、初始化kernel执行环境，配置C语言执行环境配置页表、配置MMU、跳转至C阶段**；
@@ -151,6 +153,8 @@ _head:
 在__HEAD中第一个执行的指令为`add x13, x18, #0x16`，与反汇编查看的第一条语句一致，之后转到`primary_entry`函数。
 
 查看`head.s`文件的头部注释信息可知内核启动的必要条件：**关闭 MMU、关闭D-cache、x0传递给FDT blob的物理地址**。
+
+<font color=red>注意</font>：数据高速缓存一定要关闭，因为在内核启动过程中取数据时会先访问高速缓存，而可能高速缓存中缓存了以前u-boot的一些数据，这些数据对于内核来说是错误的。 而指令高速缓存可以打开，是因为U-boot和内核代码是不重叠的，不会存在指令高速缓存有冲突。
 
 ```c
 /*
@@ -717,16 +721,668 @@ SYM_FUNC_END(__primary_switched)
 
 ## kernel启动第二阶段
 
+kernel启动的第二阶段是C语言阶段，从函数`start_kernel`开始，start_kernel()函数是所有Linux平台进入系统内核初始化后的入口函数；主要完成剩余的与硬件平台相关的初始化工作，这些初始化操作，有的是公共的，有的是需要配置才会执行的；内核工作需要的模块的初始化依次被调用，如：内存管理、调度系统、异常处理等；
 
+### start_kernel
 
+start_kernel函数是内核启动的核心参数，启动过程中的初始化工作基本都在此完成。
 
+```c
+[init/main.c]
+asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
+{
+	char *command_line;
+	char *after_dashes;
+
+	set_task_stack_end_magic(&init_task);
+	smp_setup_processor_id();
+	debug_objects_early_init();
+
+	cgroup_init_early();
+
+	local_irq_disable();
+	early_boot_irqs_disabled = true;
+
+	/*
+	 * Interrupts are still disabled. Do necessary setups, then
+	 * enable them.
+	 */
+	boot_cpu_init();
+	page_address_init();
+	pr_notice("%s", linux_banner);
+	early_security_init();
+	setup_arch(&command_line);
+	setup_boot_config(command_line);
+	setup_command_line(command_line);
+	setup_nr_cpu_ids();
+	setup_per_cpu_areas();
+	smp_prepare_boot_cpu();	/* arch-specific boot-cpu hooks */
+	boot_cpu_hotplug_init();
+
+	build_all_zonelists(NULL);
+	page_alloc_init();
+
+	pr_notice("Kernel command line: %s\n", saved_command_line);
+	/* parameters may set static keys */
+	jump_label_init();
+	parse_early_param();
+	after_dashes = parse_args("Booting kernel",
+				  static_command_line, __start___param,
+				  __stop___param - __start___param,
+				  -1, -1, NULL, &unknown_bootoption);
+	if (!IS_ERR_OR_NULL(after_dashes))
+		parse_args("Setting init args", after_dashes, NULL, 0, -1, -1,
+			   NULL, set_init_arg);
+	if (extra_init_args)
+		parse_args("Setting extra init args", extra_init_args,
+			   NULL, 0, -1, -1, NULL, set_init_arg);
+
+	/*
+	 * These use large bootmem allocations and must precede
+	 * kmem_cache_init()
+	 */
+	setup_log_buf(0);
+	vfs_caches_init_early();
+	sort_main_extable();
+	trap_init();
+	mm_init();
+
+	ftrace_init();
+
+	/* trace_printk can be enabled here */
+	early_trace_init();
+
+	/*
+	 * Set up the scheduler prior starting any interrupts (such as the
+	 * timer interrupt). Full topology setup happens at smp_init()
+	 * time - but meanwhile we still have a functioning scheduler.
+	 */
+	sched_init();
+	/*
+	 * Disable preemption - early bootup scheduling is extremely
+	 * fragile until we cpu_idle() for the first time.
+	 */
+	preempt_disable();
+	if (WARN(!irqs_disabled(),
+		 "Interrupts were enabled *very* early, fixing it\n"))
+		local_irq_disable();
+	radix_tree_init();
+
+	/*
+	 * Set up housekeeping before setting up workqueues to allow the unbound
+	 * workqueue to take non-housekeeping into account.
+	 */
+	housekeeping_init();
+
+	/*
+	 * Allow workqueue creation and work item queueing/cancelling
+	 * early.  Work item execution depends on kthreads and starts after
+	 * workqueue_init().
+	 */
+	workqueue_init_early();
+
+	rcu_init();
+
+	/* Trace events are available after this */
+	trace_init();
+
+	if (initcall_debug)
+		initcall_debug_enable();
+
+	context_tracking_init();
+	/* init some links before init_ISA_irqs() */
+	early_irq_init();
+	init_IRQ();
+	tick_init();
+	rcu_init_nohz();
+	init_timers();
+	hrtimers_init();
+	softirq_init();
+	timekeeping_init();
+
+	/*
+	 * For best initial stack canary entropy, prepare it after:
+	 * - setup_arch() for any UEFI RNG entropy and boot cmdline access
+	 * - timekeeping_init() for ktime entropy used in rand_initialize()
+	 * - rand_initialize() to get any arch-specific entropy like RDRAND
+	 * - add_latent_entropy() to get any latent entropy
+	 * - adding command line entropy
+	 */
+	rand_initialize();
+	add_latent_entropy();
+	add_device_randomness(command_line, strlen(command_line));
+	boot_init_stack_canary();
+
+	time_init();
+	perf_event_init();
+	profile_init();
+	call_function_init();
+	WARN(!irqs_disabled(), "Interrupts were enabled early\n");
+
+	early_boot_irqs_disabled = false;
+	local_irq_enable();
+
+	kmem_cache_init_late();
+
+	/*
+	 * HACK ALERT! This is early. We're enabling the console before
+	 * we've done PCI setups etc, and console_init() must be aware of
+	 * this. But we do want output early, in case something goes wrong.
+	 */
+	console_init();
+	if (panic_later)
+		panic("Too many boot %s vars at `%s'", panic_later,
+		      panic_param);
+
+	lockdep_init();
+
+	/*
+	 * Need to run this when irqs are enabled, because it wants
+	 * to self-test [hard/soft]-irqs on/off lock inversion bugs
+	 * too:
+	 */
+	locking_selftest();
+
+	/*
+	 * This needs to be called before any devices perform DMA
+	 * operations that might use the SWIOTLB bounce buffers. It will
+	 * mark the bounce buffers as decrypted so that their usage will
+	 * not cause "plain-text" data to be decrypted when accessed.
+	 */
+	mem_encrypt_init();
+
+#ifdef CONFIG_BLK_DEV_INITRD
+	if (initrd_start && !initrd_below_start_ok &&
+	    page_to_pfn(virt_to_page((void *)initrd_start)) < min_low_pfn) {
+		pr_crit("initrd overwritten (0x%08lx < 0x%08lx) - disabling it.\n",
+		    page_to_pfn(virt_to_page((void *)initrd_start)),
+		    min_low_pfn);
+		initrd_start = 0;
+	}
+#endif
+	setup_per_cpu_pageset();
+	numa_policy_init();
+	acpi_early_init();
+	if (late_time_init)
+		late_time_init();
+	sched_clock_init();
+	calibrate_delay();
+	pid_idr_init();
+	anon_vma_init();
+#ifdef CONFIG_X86
+	if (efi_enabled(EFI_RUNTIME_SERVICES))
+		efi_enter_virtual_mode();
+#endif
+	thread_stack_cache_init();
+	cred_init();
+	fork_init();
+	proc_caches_init();
+	uts_ns_init();
+	buffer_init();
+	key_init();
+	security_init();
+	dbg_late_init();
+	vfs_caches_init();
+	pagecache_init();
+	signals_init();
+	seq_file_init();
+	proc_root_init();
+	nsfs_init();
+	cpuset_init();
+	cgroup_init();
+	taskstats_init_early();
+	delayacct_init();
+
+	poking_init();
+	check_bugs();
+
+	acpi_subsystem_init();
+	arch_post_acpi_subsys_init();
+	sfi_init_late();
+	kcsan_init();
+
+	/* Do the rest non-__init'ed, we're now alive */
+	arch_call_rest_init();
+
+	prevent_tail_call_optimization();
+}
+```
+
+#### 函数属性及调用约束
+
+* **asmlinkage**：保证函数参数从寄存器传递，符合汇编调用约定；
+* **__visible**：防止编译器优化掉符号，使调试和链接器可见；
+* **__init**：防止编译器优化掉符号，使调试和链接器可见；
+* **no_sanitize_address** ：关闭 AddressSanitizer 检测。
+
+#### 变量
+
+```c
+	char *command_line;
+	char *after_dashes;
+```
+
+* **command_line**：变量存储了从 bootloader（如 GRUB、U-Boot 等）传递给 Linux 内核的启动参数。
+* **after_dashes**：是一个字符指针，用于指向内核命令行中 `--` 之后的部分。这个分隔符用于将**内核参数**和**init 进程参数**分开。
+
+#### 初始化内核基本结构
+
+```c
+	set_task_stack_end_magic(&init_task);
+	smp_setup_processor_id();
+	debug_objects_early_init();
+
+	cgroup_init_early();
+```
+
+* set_task_stack_end_magic：初始化 init_task 栈边界标记，用于栈溢出检测；
+* smp_setup_processor_id：获取当前 CPU 的物理 ID；
+* debug_objects_early_init：初始化内核调试对象系统，依赖于配置项CONFIG_DEBUG_OBJECTS；
+* cgroup_init_early：cgroup 控制组数据结构初始化， 用于控制 Linux 系统资源。
+
+#### 关闭中断，保证安全初始化
+
+```c
+	local_irq_disable();
+	early_boot_irqs_disabled = true;
+
+	/*
+	 * Interrupts are still disabled. Do necessary setups, then
+	 * enable them.
+	 */
+```
+
+* local_irq_disable禁用本地 CPU 中断，防止在硬件和内核数据结构尚未初始化时被中断打断。
+
+* early_boot_irqs_disabled设置标记，方便后续检查。
+
+#### CPU初始化及早期架构相关配置
+
+```c
+	boot_cpu_init();
+	page_address_init();
+	pr_notice("%s", linux_banner);
+	early_security_init();
+	setup_arch(&command_line);
+	setup_boot_config(command_line);
+	setup_command_line(command_line);
+	setup_nr_cpu_ids();
+	setup_per_cpu_areas();
+	smp_prepare_boot_cpu();	/* arch-specific boot-cpu hooks */
+	boot_cpu_hotplug_init();
+```
+
+* boot_cpu_init：设置当前引导系统的CPU在物理上存在，在逻辑上可以使用，初始化 boot CPU 的特权寄存器和 CPU 状态等；
+* page_address_init：初始化高端内存的映射表，设置内存也管理相关数据结构；
+* pr_notice：打印 Linux 版本号、编译时间等信息；
+* early_security_init：早期安全模块初始化；
+* setup_arch：内核架构进行初始化，每个体系都有自己的setup_arch()函数，是由顶层Makefile中的ARCH变量定义的，其中参数command_line是从bootloader中传下来的；
+* setup_boot_config：读取启动参数和硬件配置；
+* setup_command_line：保存内核命令行参数，以便后面使用；
+* setup_nr_cpu_ids：如果只是 SMP(多核 CPU)的话，此函数用于获取CPU 核心数量， CPU 数量保存在变量nr_cpu_ids 中；
+* setup_per_cpu_areas：设置SMP体系每个CPU使用的内存空间，同时拷贝初始化段里数据；
+* smp_prepare_boot_cpu：为SMP系统里引导CPU进行准备工作；
+* boot_cpu_hotplug_init：NUMA 节点和 CPU 热插拔早期初始化。
+
+> [Boot CPU 初始化和早期架构设置](https://blog.csdn.net/qq_38145502/article/details/151014473?utm_medium=distribute.pc_relevant.none-task-blog-2~default~baidujs_baidulandingword~default-1-151014473-blog-116866285.235%5Ev43%5Epc_blog_bottom_relevance_base7&spm=1001.2101.3001.4242.2&utm_relevant_index=3#t6)
+
+#### 内存节点初始化相关配置
+
+```c
+	build_all_zonelists(NULL);
+	page_alloc_init();
+```
+
+* build_all_zonelists：在当前处理的结点和系统中其它节点的内存域之间建立一种等级次序（系统内存页区(zone)链表），之后将根据这种次序来分配内存；
+* page_alloc_init：初始化所有内存管理节点列表，以便后面进行内存管理初始化。
+
+> [kernel启动流程-start_kernel的执行_3.build_all_zonelists](https://blog.csdn.net/jasonactions/article/details/113725545)
+>
+> [深入探讨start_kernel()函数的实现原理和相关技术](https://www.lxlinux.net/14038.html)
+
+#### 解析启动命令行参数
+
+```c
+	pr_notice("Kernel command line: %s\n", saved_command_line);
+	/* parameters may set static keys */
+	jump_label_init();
+	parse_early_param();
+	after_dashes = parse_args("Booting kernel",
+				  static_command_line, __start___param,
+				  __stop___param - __start___param,
+				  -1, -1, NULL, &unknown_bootoption);
+	if (!IS_ERR_OR_NULL(after_dashes))
+		parse_args("Setting init args", after_dashes, NULL, 0, -1, -1,
+			   NULL, set_init_arg);
+	if (extra_init_args)
+		parse_args("Setting extra init args", extra_init_args,
+			   NULL, 0, -1, -1, NULL, set_init_arg);
+```
+
+* jump_label_init：内核中跳转标签（Jump Label）机制的初始化函数，用于优化频繁检查的运行时条件分支的性能特性；
+* parse_early_param：解析内核启动参数中早期使用的参数（__setup() 宏注册的参数）；
+* parse_args：解析处理剩余的参数，若参数不匹配，可以通过 unknown 函数处理未知参数；
+* set_init_arg：设置 init 进程的启动参数；
+* unknown_bootoption：记录无法识别的参数。
+
+#### 各类内存缓冲、异常及调试跟踪设施初始化
+
+```c
+	/*
+	 * These use large bootmem allocations and must precede
+	 * kmem_cache_init()
+	 */
+	setup_log_buf(0);
+	vfs_caches_init_early();
+	sort_main_extable();
+	trap_init();
+	mm_init();
+
+	ftrace_init();
+
+	/* trace_printk can be enabled here */
+	early_trace_init();
+```
+
+* setup_log_buf：初始化内核日志缓冲区；
+* vfs_caches_init_early：虚拟文件系统早期初始化，包括包括dcache和inode的hash表初始化工作；
+* sort_main_extable：对内核内部的异常表进行堆排序（也就是\__start\_\__ex_table和\__stop___ex_table之中的所有元素进行），以便加速访问；
+
+* trap_init：内核陷阱异常进程初始化；
+* mm_init：内存管理初始化；
+
+* ftrace_init：调试和跟踪设施初始化。
+
+* early_trace_init：使能trace_printk，用于调试跟踪；
+
+#### 调度器与内核数据结构初始化
+
+```c
+	/*
+	 * Set up the scheduler prior starting any interrupts (such as the
+	 * timer interrupt). Full topology setup happens at smp_init()
+	 * time - but meanwhile we still have a functioning scheduler.
+	 */
+	sched_init();
+	/*
+	 * Disable preemption - early bootup scheduling is extremely
+	 * fragile until we cpu_idle() for the first time.
+	 */
+	preempt_disable();
+	if (WARN(!irqs_disabled(),
+		 "Interrupts were enabled *very* early, fixing it\n"))
+		local_irq_disable();
+	radix_tree_init();
+
+	/*
+	 * Set up housekeeping before setting up workqueues to allow the unbound
+	 * workqueue to take non-housekeeping into account.
+	 */
+	housekeeping_init();
+
+	/*
+	 * Allow workqueue creation and work item queueing/cancelling
+	 * early.  Work item execution depends on kthreads and starts after
+	 * workqueue_init().
+	 */
+	workqueue_init_early();
+
+	rcu_init();
+
+```
+
+* sched_init：初始化进程调度器数据结构并创建运行队列；
+* preempt_disable：调用进程调度，并禁止内核抢占；
+* radix_tree_init：内核radix树数据结构初始化；
+* housekeeping_init：初始化内核维护结构；
+* workqueue_init_early：允许早期工作队列创建和调度；
+* rcu_init：初始化RCU（Read Copy Update(读-拷贝修改)），包括 RCU、kvfree RCU 等，RCU主要提供在读取数据机会比较多，但更新比较的少的场合，这样减少读取数据锁的性能低下的问题；
+
+#### 调试追踪初始化
+
+```c
+	/* Trace events are available after this */
+	trace_init();
+
+	if (initcall_debug)
+		initcall_debug_enable();
+```
+
+* trace_init：初始化跟踪事件系统，ftrace的作用是帮助开发人员了解Linux内核的运行时行为，以便于进行故障调试或者性能分析，要配置 CONFIG_TRACING ，否则是空函数。
+* initcall_debug_enable：用于启用这些初始化调用的详细调试信息输出；
+
+* context_tracking_init：上下文追踪初始化，要配置 CONFIG_CONTEXT_TRACKING_FORCE，否则是空函数；
+
+#### 中断及时钟相关初始化
+
+```c
+	/* init some links before init_ISA_irqs() */
+	early_irq_init();
+	init_IRQ();
+	tick_init();
+	rcu_init_nohz();
+	init_timers();
+	hrtimers_init();
+	softirq_init();
+	timekeeping_init();
+	...
+	time_init();
+```
+
+* early_irq_init：前期中断初始化，主要初始化 struct irq_desc 这个类型的一个数组，另外还进行了架构相关的前期中断初始化；
+* init_IRQ：架构相关的中断初始化；
+* tick_init：初始化时钟滴答控制器；
+* rcu_init_nohz：内核中用于初始化 RCU（Read-Copy-Update）无滴答模式的函数。需要配置CONFIG_NO_HZ；
+* init_timers：主要初始化引导CPU的时钟相关的数据结构，注册时钟的回调函数，当时钟到达时可以回调时钟处理函数，最后初始化时钟软件中断处理 TIMER_SOFTIQR；
+* hrtimers_init：初始化高精度的定时器，并设置回调函数；
+* softirq_init：初始化软件中断，软件中断与硬件中断区别就是中断发生时，软件中断是使用线程来监视中断信号，而硬件中断是使用CPU硬件来监视中断；
+* timekeeping_init：初始化系统时钟计时，初始化内核里与时钟计时相关的变量；
+* time_init：初始化系统时钟。
+
+#### 内核随机数和防护机制初始化
+
+```c
+	/*
+	 * For best initial stack canary entropy, prepare it after:
+	 * - setup_arch() for any UEFI RNG entropy and boot cmdline access
+	 * - timekeeping_init() for ktime entropy used in rand_initialize()
+	 * - rand_initialize() to get any arch-specific entropy like RDRAND
+	 * - add_latent_entropy() to get any latent entropy
+	 * - adding command line entropy
+	 */
+	rand_initialize();
+	add_latent_entropy();
+	add_device_randomness(command_line, strlen(command_line));
+	boot_init_stack_canary();
+```
+
+* rand_initialize：内核中随机数生成器子系统的初始化；
+* add_latent_entropy：内核初始化添加潜在熵，潜在熵（Latent Entropy）是一种编译时和启动时的熵收集技术，它利用内核代码布局、内存地址随机化等编译时和链接时的不确定性作为熵源；
+* add_device_randomness：用于收集设备相关的数据作为熵源，这些数据虽然不是完全随机的，但包含一定的不可预测性，可以增强随机数池的熵；
+* boot_init_stack_canary：初始化堆栈保护的canary值，用来防止栈溢出。
+
+#### 性能与调试设施
+
+```c
+	perf_event_init();
+	profile_init();
+	call_function_init();
+```
+
+* perf_event_init()：性能计数器初始化；
+* profile_init()：系统调用和性能分析初始化；
+* call_function_init()：异步函数调用初始化；
+
+#### 启用中断
+
+```c
+	WARN(!irqs_disabled(), "Interrupts were enabled early\n");
+
+	early_boot_irqs_disabled = false;
+	local_irq_enable();
+```
+
+* local_irq_enable：启用本地 CPU 中断，允许内核正常调度和中断处理。
+
+#### 内存管理与控制组初始化
+
+```c
+	kmem_cache_init_late();
+
+	/*
+	 * HACK ALERT! This is early. We're enabling the console before
+	 * we've done PCI setups etc, and console_init() must be aware of
+	 * this. But we do want output early, in case something goes wrong.
+	 */
+	console_init();
+	if (panic_later)
+		panic("Too many boot %s vars at `%s'", panic_later,
+		      panic_param);
+
+	lockdep_init();
+
+	/*
+	 * Need to run this when irqs are enabled, because it wants
+	 * to self-test [hard/soft]-irqs on/off lock inversion bugs
+	 * too:
+	 */
+	locking_selftest();
+
+	/*
+	 * This needs to be called before any devices perform DMA
+	 * operations that might use the SWIOTLB bounce buffers. It will
+	 * mark the bounce buffers as decrypted so that their usage will
+	 * not cause "plain-text" data to be decrypted when accessed.
+	 */
+	mem_encrypt_init();
+
+#ifdef CONFIG_BLK_DEV_INITRD
+	if (initrd_start && !initrd_below_start_ok &&
+	    page_to_pfn(virt_to_page((void *)initrd_start)) < min_low_pfn) {
+		pr_crit("initrd overwritten (0x%08lx < 0x%08lx) - disabling it.\n",
+		    page_to_pfn(virt_to_page((void *)initrd_start)),
+		    min_low_pfn);
+		initrd_start = 0;
+	}
+#endif
+	setup_per_cpu_pageset();
+	numa_policy_init();
+```
+
+* kmem_cache_init_late：slab内存分配器初始化；
+* console_init：console_init()函数执行控制台的初始化操作；在console_init()函数执行之前的printk打印信息，需要在console_init()函数执行之后才能打印出来；因为在console_inie()函数之前，printk的打印信息都保存在一个缓存区中，等到console_init()函数执行之后，控制台被初始化完成，就可以将缓冲区中的内容打印出来；
+* lockdep_init：初始化锁的状态跟踪模块。由于内核大量使用锁来进行多进程、多处理器的同步操作，那么死锁就会在代码不合理时出现，这时要知道那个锁造成的，真是比较困难的。遇到这种情况，就需要想办法知道那个锁造成的，因此就需要跟踪锁的使用状态，以便发现出错时，把锁的状态打印出来；
+* locking_selftest：测试锁的API是否使用正常，进行自我测试。比如测试自旋锁、读写锁、一般信号量和读写信号量；
+* mem_encrypt_init：内核中内存加密子系统初始化，在支持内存加密的平台上，初始化内存加密相关的设置，确保内核在运行时可以使用内存加密功能来保护数据。
+* setup_per_cpu_pageset：创建每个CPU的高速缓存集合数组；
+* numa_policy_init：numa 策略初始化，numa是NonUniform Memory AccessAchitecture的缩写，主要用来提高多个CPU访问内存的速度。
+
+#### ACPI前期及时钟后期初始化
+
+* acpi_early_init：ACPI前期初始化；
+* late_time_init：时钟相关后期的初始化；
+* sched_clock_init：内核中调度器时钟系统的初始化；
+* calibrate_delay：用于校准 BogoMIPS 值和计算 `loops_per_jiffy`。这个函数在内核启动过程中确定处理器的速度，为后续的延迟函数提供基准；
+
+#### 控制组、命名空间、进程等初始化
+
+```c
+	pid_idr_init();
+	anon_vma_init();
+#ifdef CONFIG_X86
+	if (efi_enabled(EFI_RUNTIME_SERVICES))
+		efi_enter_virtual_mode();
+#endif
+	thread_stack_cache_init();
+	cred_init();
+	fork_init();
+	proc_caches_init();
+	uts_ns_init();
+	buffer_init();
+	key_init();
+	security_init();
+	dbg_late_init();
+	vfs_caches_init();
+	pagecache_init();
+	signals_init();
+	seq_file_init();
+	proc_root_init();
+	nsfs_init();
+	cpuset_init();
+	cgroup_init();
+	taskstats_init_early();
+	delayacct_init();
+
+	poking_init();
+	check_bugs();
+```
+
+* pid_idr_init：内核中进程 ID（PID）管理子系统的初始化函数。负责初始化用于高效管理进程 ID 的 IDR（Integer ID Radix Tree）机制；
+* anon_vma_init：匿名虚拟内存区域（Anonymous Virtual Memory Area）管理机制初始化，分配一个anon_vma_cachep作为anon_vma的slab缓存，这个技术是PFRA（页框回收算法）技术中的组成部分，用于快速的定位指向同一页框的所有页表项；
+* efi_enter_virtual_mode：初始化EFI并进入虚拟模式，EFI是ExtensibleFirmware Interface的缩写，就是INTEL公司新开发的BIOS接口；
+* thread_stack_cache_init：内核线程栈缓存管理系统的初始化；
+* cred_init：凭证子系统系统初始化，用于表示任务的安全属性；
+* fork_init：根据当前物理内存计算出来可以创建进程（线程）的最大数量，并进行进程环境初始化，为task_struct分配空间
+* proc_caches_init：进程缓存初始化；
+* uts_ns_init：内核 UTS（UNIX Timesharing System）命名空间初始化，用于隔离系统标识符，如节点名（hostname）、域名（domainname）等；
+* buffer_init：文件系统的缓存区初始化，并计算最大可以使用的文件缓存；
+* key_init：初始化内核安全键管理列表和结构，内核秘钥管理系统；
+* security_init：初始化内核安全管理框架，以便提供文件\登陆等权限；
+* dbg_late_init：内核调试系统后期初始化；
+* vfs_caches_init：虚拟文件系统进行缓存初始化，提高虚拟文件系统的访问速度；
+* pagecache_init：页缓存初始化；
+* signals_init：内核中信号处理子系统的初始化；
+* seq_file_init：内核序列文件（sequential file）接口的初始化；
+* proc_root_init：初始化系统进程文件系统，主要提供内核与用户进行交互的平台，方便用户实时查看进程的信息。
+* nsfs_init：为命名空间文件系统（nsfs）进行初始化注册，它并不直接创建任何命名空间，而是为后续通过 `clone` 或 `unshare` 系统调用创建的命名空间提供一个统一的、用于展示和管理的虚拟文件系统接口。
+* cpuset_init：初始化CPUSET。CPUSET主要为控制组提供CPU和内存节点的管理的结构；
+* cgroup_init：初始化进程控制组，主要用来为进程和其子程提供性能控制。比如限定这组进程的CPU使用率为20％；
+* taskstats_init_early：初始化任务状态相关的缓存、队列和信号量。任务状态主要向用户提供任务的状态信息；
+* delayacct_init：任务延迟机制初始化，初始化每个任务延时计数。当一个任务等待CPU或者IO同步的时候，都需要计算等待时间；
+* poking_init：初始化一个临时的内存区域（称为 "poking area"），这个区域用于安全地动态修改正在运行的内核代码；
+* check_bugs：检查CPU配置、FPU等是否非法使用不具备的功能，在ARM架构下check_writebuffer_bugs 测试写缓存一致性；
+
+ACPI及平台相关初始化
+
+```c
+	acpi_subsystem_init();
+	arch_post_acpi_subsys_init();
+	sfi_init_late();
+	kcsan_init();
+```
+
+* acpi_subsystem_init：acpi子系统初始化；
+* arch_post_acpi_subsys_init：架构相关的后 ACPI 初始化；
+* sfi_init_late：处理来自 SFI（Simple Firmware Interface）表的系统配置信息。SFI 是英特尔为低功耗、移动设备（如早期的 Intel MID 平台）设计的一种轻量级固件接口；
+* kcsan_init：初始化内核并发性检测工具 KCSAN（Kernel Concurrency Sanitizer）。KCSAN 是一个用于在运行时检测内核中的数据竞争（data race）的动态分析工具。
+
+#### 核心子系统的初始化
+
+```c
+	/* Do the rest non-__init'ed, we're now alive */
+	arch_call_rest_init();
+```
+
+* arch_call_rest_init：作为一个架构特定的跳转点，用于调用 `rest_init` 函数。在 `start_kernel` 完成所有核心子系统的初始化后，它通过这个接口将控制权最终交给 `rest_init` 函数。`rest_init` 会创建第一个用户态进程（init进程）并启动内核的空闲任务，标志着内核启动过程的完成。
+
+### arch_call_rest_init
 
 
 
 # 参考
+
+Documentation/arm64/booting.rst
 
 [Linux内核启动流程-基于ARM64](https://mshrimp.github.io/2020/04/19/Linux%E5%86%85%E6%A0%B8%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B-%E5%9F%BA%E4%BA%8EARM64/)
 
 [ARM64 linux 启动](https://www.cnblogs.com/memoryart/p/arm64_linux_boot.html)
 
 [ARM64的启动过程之（一）：内核第一个脚印](http://www.wowotech.net/armv8a_arch/arm64_initialize_1.html)
+
+[3.9. kernel 启动流程](http://www.pedestrian.com.cn/kernel/kernel_start/index.html#kernel)
+
+[内核入口 - start_kernel](https://docs.openatom.club/initialization/linux-initialization-4)
+
+[Linux kernel arm64 启动流程](https://blog.csdn.net/qq_38145502/article/details/151014473?utm_medium=distribute.pc_relevant.none-task-blog-2~default~baidujs_baidulandingword~default-1-151014473-blog-116866285.235^v43^pc_blog_bottom_relevance_base7&spm=1001.2101.3001.4242.2&utm_relevant_index=3)
+
+[Linux 内核启动分析Part 1](https://github.com/buckrudy/Blog/issues/1)
