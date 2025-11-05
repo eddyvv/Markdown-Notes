@@ -1367,7 +1367,7 @@ ACPI及平台相关初始化
 
 ### arch_call_rest_init
 
-
+待完善
 
 # 参考
 
