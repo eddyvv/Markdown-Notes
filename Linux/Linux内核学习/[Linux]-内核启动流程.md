@@ -1369,6 +1369,8 @@ ACPI及平台相关初始化
 
 待完善
 
+> [kernel启动流程-start_kernel的执行_7.arch_call_rest_init](https://blog.csdn.net/jasonactions/article/details/114007646)
+
 # 参考
 
 Documentation/arm64/booting.rst

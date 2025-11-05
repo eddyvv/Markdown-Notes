@@ -126,7 +126,7 @@ $ mkdir rootfs
 $ sudo mount rootfs.img rootfs
 ```
 
-拷贝busybox的编译结果_install,同时创建关键目录（挂载虚拟文件系统需要）
+拷贝busybox的编译结果_install，同时创建关键目录（挂载虚拟文件系统需要）
 
 ```bash
 $ sudo cp -rf _install/*  rootfs
